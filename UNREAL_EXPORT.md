@@ -33,7 +33,7 @@
 - The walkthrough is `CAM-walkthrough` on `CRV-walkthrough` (frames 1-1080 at 24 fps, 45 s). The export script bakes the path and aim constraints to keyframes in the exported file; the .blend keeps the live constraints for editing.
 
 ## Lights
-- Light powers are Blender watts and need exposure-relative rescaling in Unreal; keep the ratios (cans 15-66 W spots with a 125 degree cone, lamps 22-30 W points, chandeliers 55 W, sun strength 4.2).
+- Light powers are Blender watts and need exposure-relative rescaling in Unreal; keep the ratios (cans 15-66 W spots with a 125 degree cone, lamps 22-30 W points, chandeliers 55 W, sun strength 5.0, colour 1.0 / 0.36 / 0.09 linear, measured from the HDRI's sun).
 - Two Cycles-only settings to mirror in engine: glass and lamp-shade meshes do not cast shadows (so sun and bulbs light the rooms), and lights are hidden from camera and reflection rays.
 - Sun: 4.1 degrees elevation, behind the house and slightly left as seen from the front (aligned with the sun in the HDRI). Sky: Poly Haven HDRI `magalies_field_sunset` at strength 0.30, in `project-files/textures/`; use it as the sky light / backdrop, or Sky Atmosphere at the same sun angle.
 

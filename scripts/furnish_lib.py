@@ -194,7 +194,7 @@ def furnish_materials():
     set_in(b, "Roughness", 0.45)
     mat.use_fake_user = True
     MATN["ceramic"] = mat.name
-    _fabric("MAT-mat_rubber", (0.03, 0.03, 0.035), rough=0.8, sheen=0.0, bump=0.2, scale=200.0)
+    _ph_textile("MAT-mat_rubber", "rubber_tiles", 2.0, sheen=0.0)        # garage and gym mats: Poly Haven rubber tiles
     MATN["rubber"] = "MAT-mat_rubber"
     bs = bpy.data.materials.get("MAT-basin") or bpy.data.materials.new("MAT-basin")
     bs.use_nodes = True

@@ -4,7 +4,7 @@
 - Instances with a footprint corner inside a wall: 0 
 - Modeled meshes with more than 1% of sampled vertices more than 4 cm inside a wall: 0 
 - Materials on modeled furniture (32), all from the design-system palette: art_a, art_b, art_c, brass, bulb, ceramic_matte, curtain, fab_char, fab_grey, fab_navy, fab_oat, fab_rust, fab_sage, fab_white, glass, glass_dark, hardware_black, lamp_shade, leather_tan, mat_rubber, mirror, oak, porcelain, quartz, rug_blue, rug_cream, rug_warm, siding_dark, stainless, tile_marble, towel, trim_white
-- Surface of modeled furniture carrying Poly Haven photographic textures (linen, wool, leather, oak, marble tile) or generated artwork: 68% by area; the rest is plain-value materials (painted cabinetry, porcelain, quartz, metals, glass).
+- Surface of modeled furniture carrying Poly Haven photographic textures (linen, wool, leather, oak, marble, painted plaster, rubber tile) or generated artwork: 89% by area; the rest is plain-value materials (porcelain, metals, glass, lamp shades).
 - Upholstered and porcelain meshes with bevel + weighted-normal modifiers for soft edges: 41.
 - Wall-backed pieces are snapped to the built wall faces by ray cast (`facing_frame` in `furnish_lib.py`); curtain panels are clamped to their room; shower tile is snapped to the walls.
 

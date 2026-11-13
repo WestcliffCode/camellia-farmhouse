@@ -78,8 +78,8 @@ for c in furn.children:
         else:
             area_plain += a_
 soft = sum(1 for c in furn.children for ob in c.objects if ob.type == "MESH" and any(md.type == "BEVEL" for md in ob.modifiers))
-lines[6:6] = [f"- Surface of modeled furniture carrying Poly Haven photographic textures (linen, wool, leather, oak, marble tile) or generated artwork: "
-              f"{100 * area_tex / max(area_tex + area_plain, 1e-6):.0f}% by area; the rest is plain-value materials (painted cabinetry, porcelain, quartz, metals, glass).",
+lines[6:6] = [f"- Surface of modeled furniture carrying Poly Haven photographic textures (linen, wool, leather, oak, marble, painted plaster, rubber tile) or generated artwork: "
+              f"{100 * area_tex / max(area_tex + area_plain, 1e-6):.0f}% by area; the rest is plain-value materials (porcelain, metals, glass, lamp shades).",
               f"- Upholstered and porcelain meshes with bevel + weighted-normal modifiers for soft edges: {soft}."]
 open(os.path.join(ROOT, "output", "furnishing_audit.md"), "w").write("\n".join(lines) + "\n")
 print("\n".join(lines[2:6]))

@@ -29,7 +29,10 @@ Modern farmhouse: buff brick and near-black board-and-batten outside, calm white
 | MAT-fab_*, MAT-curtain, MAT-towel | `rough_linen` dyed to palette colours | 0.27 m | sofas, beds, headboards, cushions, curtains, towels |
 | MAT-rug_*, MAT-fab_grey, MAT-fab_char | `poly_wool_herringbone` dyed | 0.27-0.45 m | rugs, grey upholstery |
 | MAT-leather_tan | `fabric_leather_01` | 0.4 m | stools |
-| Value-only Principled | — | — | paints, quartz, metals, glass, porcelain (with a shared tileable noise normal map where texture is needed) |
+| MAT-trim_white | `beige_wall_001` (whitened) | 3.0 m | painted millwork and cabinetry: base, crown, casings, cabinet boxes and doors |
+| MAT-quartz | `marble_01` (one tile cropped from inside its grout lines, mirrored into a seam-free slab, lightened) | 1.15 x 0.64 m repeat | counters and splashes. Poly Haven's stone sets are all tiled floors, so a slab is made from a single tile |
+| MAT-mat_rubber | `rubber_tiles` | 2.0 m | garage and gym floor mats |
+| Value-only Principled | — | — | wall and ceiling paints, metals, glass, porcelain (with a shared tileable noise normal map where texture is needed) |
 | Generated textures | `TEX-lawn`, `TEX-art_*`, `TEX-noise_normal` (written by the scripts) | 9 m / 1.3-1.8 m / per material | lawn, artwork, surface grain |
 
 All meshes built by the scripts carry world-scale box UVs in metres (`UVMap`), so a material's Mapping scale is 1 / tile size. Every `MAT-` material is one Principled BSDF fed only by image textures and plain values: colour tints and roughness changes on the Poly Haven sets are baked into new texture files, so nothing depends on procedural shader nodes. Textures live in `project-files/textures/` and are referenced relatively.
@@ -42,7 +45,7 @@ All meshes built by the scripts carry world-scale box UVs in metres (`UVMap`), s
 
 ## Lighting philosophy
 - Golden hour sliding into dusk, taken from a real capture: the sky is the Poly Haven HDRI `magalies_field_sunset` (clear-sky sunset over a dry field with bare trees), dimmed to strength 0.30 so it reads as dusk and supplies the horizon and treeline.
-- The HDRI's sun was located in the image (4.1 degrees above the horizon) and the map rotated so it sits behind the house, slightly left as seen from the street. A sun lamp is aligned with it (deep orange 1.0, 0.48, 0.20, strength 4.2) to give crisp beams through the family room, kitchen, dining, game room and primary suite glazing.
+- The HDRI's sun was located in the image (4.1 degrees above the horizon) and the map rotated so it sits behind the house, slightly left as seen from the street. A sun lamp is aligned with it and takes its colour from the sun disc measured in the same photograph (1.0, 0.36, 0.09, strength 5.0) to give crisp beams through the family room, kitchen, dining, game room and primary suite glazing.
 - Practicals at 2700-3000 K carry the interiors: recessed cans (spot lights, 125 degree cone) on a grid, pendants over the island, ring chandeliers in foyer and dining, table and floor lamps in every sitting and sleeping room, under-cabinet spots in the kitchen, lanterns at the exterior doors.
 - AgX view transform, exposure +0.6. Glass and lamp-shade objects are excluded from shadow rays so sun and bulbs light the rooms.
 

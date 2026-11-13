@@ -1,7 +1,7 @@
 Lighting verification (measured in the saved scene, 2026-11-13)
 Sky reference: Poly Haven HDRI magalies_field_sunset (captured clear-sky sunset over a field, CC0), 2k, strength 0.30
 Sun position measured in the HDRI: elevation 4.1 deg; map rotated so that sun sits behind the house
-Sun lamp aligned with it: elevation 4.1 deg, azimuth -18.8 deg from the house's back axis, colour (1.00, 0.48, 0.20), strength 4.2
+Sun lamp aligned with it: elevation 4.1 deg, azimuth -18.8 deg from the house's back axis, colour (1.00, 0.36, 0.09) measured from the sun disc in the HDRI (mean of its 400 brightest pixels), strength 5.0 (same luminance as before)
 View transform AgX, exposure +0.6
 Practicals: 145 spot lights (recessed cans, under-cabinet, porch) and 34 point lights (lamps, pendants, chandeliers, sconces, lanterns, fire glow), all 2700-3000 K
 Direct sun reaching interior sample points through glazing (lit / tested; ray test toward the sun, glass treated as clear):
@@ -43,3 +43,32 @@ Sun coverage against the glazing design (exterior glazing whose outward normal f
 
 Golden-hour criterion: golden hour is conventionally the period with the sun between 6 deg above and 4 deg below the horizon.
 Sun in the captured sky and the aligned lamp: 4.1 deg above the horizon -> inside that band. HDRI metadata: time_of_day = sunset, weather = clear.
+
+Sun direction against per-room coverage (eighth pass; 15 x 15 grid at three heights per room, ray to the sun, glass treated as clear, trees and porches included):
+  room               -18.8 (chosen)    -35         -45         -55     (azimuth from the back axis toward the west, degrees)
+  great_room           129/351       118/351     124/351     106/351
+  game_room            226/675       166/675     109/675      70/675
+  primary_suite         91/660        90/660      98/660     109/660
+  foyer                195/663        35/663       0/663       0/663
+  back_vestibule       213/675        20/675      45/675       0/675
+  mud_vestibule         70/360        40/360      68/360     183/360
+  portico               58/675         0/675       0/675       0/675
+  jj_bath_a             63/675         0/675       0/675       0/675
+  hutch_niche           28/675       211/675     200/675     205/675
+  bedroom_4             14/675        39/675      86/675     124/675
+  family_foyer           0/639        22/639      62/639      76/639
+  utility                0/675         9/675      14/675      26/675
+  stair                  0/675        14/675      30/675       0/675
+  office                 3/675        16/675       0/675       0/675
+  summed sunlit fraction  1.89          1.39        1.51        1.76
+No single sun position lights every room: turning the sun west brings it into bedroom 4 (its only window faces the side
+of the house, so at the chosen azimuth the sun grazes that wall at 19 degrees) but takes it out of the foyer, the portico
+and most of the game room. The chosen azimuth keeps the beams in the rooms the cameras feature. The office has one window,
+facing the street, directly away from any sun that lights the back of the house.
+Window-by-window check at the chosen azimuth (35 rays per opening from just outside the glass toward the sun): the
+sun-facing openings are unobstructed (primary suite 35/35 and 35/35, game room 22/35, 35/35 and 35/35, great room 33/35,
+dining windows 26/35, dining slider 28/35, kitchen slider 30/35, bedroom 4 35/35); the few blocked rays hit porch posts,
+a tree or a chair on the porch.
+
+Reference comparison: see output/lighting_reference.md and output/renders/lighting_reference_board.png (the captured sky
+panorama beside the renders, same view transform and exposure, with measured hues).

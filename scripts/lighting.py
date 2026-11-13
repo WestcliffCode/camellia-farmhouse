@@ -66,6 +66,7 @@ out = nt.nodes.new("ShaderNodeOutputWorld")
 bg = nt.nodes.new("ShaderNodeBackground")
 nt.links.new(bg.outputs[0], out.inputs["Surface"])
 HDRI_SUN = None
+SUN_COLOR = (1.0, 0.48, 0.20)                           # fallback when no captured sky is present
 if hdr is not None:
     src = bpy.path.abspath(hdr.filepath)
     dst = os.path.join(TEX_DIR, os.path.basename(src) or HDRI_ID + "_2k.hdr")
@@ -81,9 +82,12 @@ if hdr is not None:
     w_, h_ = hdr.size
     px = np.empty(w_ * h_ * 4, np.float32)
     hdr.pixels.foreach_get(px)
-    lum = px.reshape(h_, w_, 4)[..., :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    rgb_ = px.reshape(h_, w_, 4)[..., :3]
+    lum = rgb_ @ np.array([0.2126, 0.7152, 0.0722], np.float32)
     thr = np.partition(lum.ravel(), -200)[-200]
     ys_, xs_ = np.nonzero(lum >= thr)
+    disc = rgb_[lum >= np.partition(lum.ravel(), -400)[-400]].mean(0)          # the captured sun disc
+    SUN_COLOR = tuple(float(c) for c in disc / disc.max())                     # lamp takes its colour from the reference sky
     wts = lum[ys_, xs_]
     u = float(np.average((xs_ + 0.5) / w_, weights=wts))
     v = float(np.average((ys_ + 0.5) / h_, weights=wts))
@@ -117,8 +121,10 @@ else:
 scene["camellia_hdri_sun"] = json.dumps(HDRI_SUN)
 
 sd = bpy.data.lights.new("LGT-sun", "SUN")
-sd.energy = 4.2
-sd.color = (1.0, 0.48, 0.20)
+sd.color = SUN_COLOR
+# strength holds the luminance the scene was balanced at, whatever the measured colour (2.39 = 4.2 x the luminance of the old hand-set colour)
+sd.energy = 2.39 / (0.2126 * SUN_COLOR[0] + 0.7152 * SUN_COLOR[1] + 0.0722 * SUN_COLOR[2])
+scene["camellia_sun_color"] = json.dumps([round(c, 3) for c in SUN_COLOR])
 sd.angle = math.radians(1.6)
 sun = bpy.data.objects.new("LGT-sun", sd)
 col.objects.link(sun)

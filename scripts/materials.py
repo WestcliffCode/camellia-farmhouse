@@ -66,6 +66,50 @@ def derive(src, name, size, sat=1.0, val=1.0, hue=0.5, rough_mul=1.0, normal=1.0
     return mat
 
 
+def slab(src, name, size, box, sat, val, rough):
+    """Poly Haven's stone sets are all tiled floors, and a countertop is one slab: crop a single tile from inside its
+    grout lines (size = metres the source image covers; box = x0, y0, x1, y1 as fractions of it, origin bottom-left), mirror it into a seam-free repeat,
+    lighten it and save it as a new texture. Polished stone: plain roughness, no normal map."""
+    srcm = bpy.data.materials[src]
+    sb = principled(srcm)
+    simg = next(l.from_node.image for l in srcm.node_tree.links if l.to_node == sb and l.to_socket.name == "Base Color")
+    w, h = simg.size
+    x0, y0, x1, y1 = int(box[0] * w), int(box[1] * h), int(box[2] * w), int(box[3] * h)
+    path = os.path.join(TEX_DIR, f"{name}_Diffuse_{src}_slab.png")
+    if not os.path.exists(path):
+        tile = _pixels(simg)[y0:y1, x0:x1]
+        rep = np.concatenate([np.concatenate([tile, tile[:, ::-1]], 1), np.concatenate([tile[::-1], tile[::-1, ::-1]], 1)], 0)
+        tmp = _write_tex(rep, path, name + "_Diffuse_src")
+        img = bake_tint(tmp, name + "_Diffuse", 0.5, sat, val)
+    else:
+        img = bake_tint(_load_tex(path, name + "_Diffuse_src"), name + "_Diffuse", 0.5, sat, val)
+    old = bpy.data.materials.get(name)
+    if old:
+        old.name = name + "__old"
+    mat = bpy.data.materials.new(name)
+    if old:
+        old.user_remap(mat)
+        bpy.data.materials.remove(old)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    b = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    nt.links.new(b.outputs[0], out.inputs["Surface"])
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    mp = nt.nodes.new("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = (1.0 / (2 * (x1 - x0) / w * size), 1.0 / (2 * (y1 - y0) / h * size), 1.0)
+    tx = nt.nodes.new("ShaderNodeTexImage")
+    tx.image = img
+    nt.links.new(tc.outputs["UV"], mp.inputs["Vector"])
+    nt.links.new(mp.outputs["Vector"], tx.inputs["Vector"])
+    nt.links.new(tx.outputs["Color"], b.inputs["Base Color"])
+    set_in(b, "Roughness", rough)
+    mat.use_fake_user = True
+    return mat
+
+
 def glass(name, tint=(1, 1, 1), rough=0.0):
     """Plain transmissive Principled. Glass objects are excluded from shadow rays so sunlight passes."""
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
@@ -115,13 +159,13 @@ M["oak_ceiling"] = derive("oak_veneer_03", "MAT-oak_ceiling", 1.0, sat=1.4, val=
 M["white"] = solid("MAT-paint_white", (0.86, 0.85, 0.82), 0.55, bump=0.05)
 M["charcoal"] = solid("MAT-paint_charcoal", (0.075, 0.08, 0.085), 0.5, bump=0.05)
 M["ceiling"] = solid("MAT-paint_ceiling", (0.9, 0.9, 0.88), 0.7)
-M["trim"] = solid("MAT-trim_white", (0.9, 0.9, 0.88), 0.32)
+M["trim"] = derive("beige_wall_001", "MAT-trim_white", 3.0, sat=0.10, val=2.8, rough_mul=0.52, normal=0.5)   # painted millwork and cabinetry: Poly Haven smooth painted plaster, whitened
 M["siding"] = solid("MAT-siding_dark", (0.04, 0.042, 0.045), 0.62, bump=0.08, bump_scale=120)
 M["metal_black"] = solid("MAT-metal_black", (0.012, 0.012, 0.014), 0.38, metal=0.7)
 M["hw_black"] = solid("MAT-hardware_black", (0.01, 0.01, 0.01), 0.3, metal=0.9)
 M["roof_metal"] = solid("MAT-roof_metal", (0.03, 0.031, 0.034), 0.36, metal=0.9)
 M["garage_door"] = solid("MAT-garage_door", (0.05, 0.052, 0.056), 0.45)
-M["quartz"] = solid("MAT-quartz", (0.87, 0.87, 0.85), 0.14)
+M["quartz"] = slab("marble_01", "MAT-quartz", 1.5, (0.070, 0.566, 0.453, 0.779), sat=0.18, val=1.75, rough=0.14)   # counters: one Poly Haven marble tile as a slab
 M["steel"] = solid("MAT-stainless", (0.55, 0.56, 0.57), 0.24, metal=1.0)
 M["brass"] = solid("MAT-brass", (0.78, 0.57, 0.27), 0.28, metal=1.0)
 M["porcelain"] = solid("MAT-porcelain", (0.9, 0.9, 0.9), 0.08)
