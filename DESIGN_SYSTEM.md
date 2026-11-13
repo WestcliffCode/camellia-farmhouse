@@ -26,6 +26,9 @@ Modern farmhouse: buff brick and near-black board-and-batten outside, calm white
 | MAT-roof_shingle | `roof_slates_03` (darkened) | 3.0 m | roofs |
 | MAT-concrete | `concrete_floor` (desaturated) | 2.08 m | slab, porches, garage floor, paving |
 | MAT-oak / MAT-timber / MAT-oak_ceiling | `oak_veneer_03` | 1.0 m | cabinetry, beams, mantels, shelves, posts, porch ceilings |
+| MAT-fab_*, MAT-curtain, MAT-towel | `rough_linen` dyed to palette colours | 0.27 m | sofas, beds, headboards, cushions, curtains, towels |
+| MAT-rug_*, MAT-fab_grey, MAT-fab_char | `poly_wool_herringbone` dyed | 0.27-0.45 m | rugs, grey upholstery |
+| MAT-leather_tan | `fabric_leather_01` | 0.4 m | stools |
 | Value-only Principled | — | — | paints, quartz, metals, glass, porcelain (with a shared tileable noise normal map where texture is needed) |
 | Generated textures | `TEX-lawn`, `TEX-art_*`, `TEX-noise_normal` (written by the scripts) | 9 m / 1.3-1.8 m / per material | lawn, artwork, surface grain |
 

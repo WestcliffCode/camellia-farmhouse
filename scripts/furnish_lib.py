@@ -3,7 +3,7 @@
 exec() after bl_common.py. Poly Haven models are imported once (each lands in a collection named by
 its asset id); organise_assets() parks those collections under COL-assets_src and place() instances them.
 """
-PH_ASSETS = ["modern_arm_chair_01", "side_table_01", "modern_coffee_table_01", "coffee_table_round_01",
+PH_ASSETS = ["ceiling_fan", "modern_arm_chair_01", "side_table_01", "modern_coffee_table_01", "coffee_table_round_01",
              "dining_chair_02", "mid_century_lounge_chair", "steel_frame_shelves_01", "steel_frame_shelves_03",
              "drawer_cabinet", "modern_wooden_cabinet", "potted_plant_01", "potted_plant_02", "potted_plant_04",
              "ceramic_vase_01", "ceramic_vase_03", "wooden_bowl_01", "decorative_book_set_01",
@@ -138,17 +138,49 @@ def _shade(name, color):
     return mat
 
 
+def _ph_textile(name, src, size, color=None, contrast=1.0, sheen=0.3, normal=1.0):
+    """Poly Haven textile set dyed to the palette colour (dye baked into a new texture, so it exports)."""
+    old = bpy.data.materials.get(name)
+    if old:
+        old.name = name + "__old"
+    mat = bpy.data.materials[src].copy()
+    mat.name = name
+    if old:
+        old.user_remap(mat)
+        bpy.data.materials.remove(old)
+    nt = mat.node_tree
+    b = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    mp = next(n for n in nt.nodes if n.type == "MAPPING")
+    mp.inputs["Scale"].default_value = (1.0 / size, 1.0 / size, 1.0)
+    for l in list(nt.links):
+        if l.to_node.type == "OUTPUT_MATERIAL" and l.to_socket.name == "Displacement":
+            nt.links.remove(l)
+    cl = next((l for l in nt.links if l.to_node == b and l.to_socket.name == "Base Color"), None)
+    if color is not None and cl and cl.from_node.type == "TEX_IMAGE":
+        cl.from_node.image = bake_recolor(cl.from_node.image, name + "_Diffuse", color, contrast)
+    set_in(b, "Sheen Weight", sheen)
+    for n in nt.nodes:
+        if n.type == "NORMAL_MAP":
+            set_in(n, "Strength", normal)
+    if color is not None:
+        mat.diffuse_color = (*color, 1.0)
+    mat.use_fake_user = True
+    return mat
+
+
 def furnish_materials():
-    F_ = {"fab_oat": (0.58, 0.53, 0.45), "fab_white": (0.80, 0.78, 0.73), "fab_sage": (0.30, 0.36, 0.28),
-          "fab_rust": (0.45, 0.19, 0.11), "fab_navy": (0.05, 0.08, 0.15), "fab_char": (0.10, 0.10, 0.11),
-          "fab_grey": (0.42, 0.42, 0.41), "rug_cream": (0.70, 0.66, 0.58), "rug_blue": (0.30, 0.36, 0.42),
-          "rug_warm": (0.55, 0.42, 0.32), "curtain": (0.84, 0.82, 0.77), "towel": (0.86, 0.85, 0.83)}
-    for k, c in F_.items():
-        big = k.startswith("rug")
-        _fabric("MAT-" + k, c, bump=0.3 if big else 0.12, scale=260.0 if big else 420.0)
+    LIN, BOU, HER = "rough_linen", "wool_boucle", "poly_wool_herringbone"
+    F_ = {"fab_oat": (LIN, 0.27, (0.58, 0.53, 0.45)), "fab_white": (LIN, 0.27, (0.80, 0.78, 0.73)),
+          "fab_sage": (LIN, 0.27, (0.30, 0.36, 0.28)), "fab_rust": (LIN, 0.27, (0.45, 0.19, 0.11)),
+          "fab_navy": (LIN, 0.27, (0.05, 0.08, 0.15)), "fab_char": (HER, 0.27, (0.10, 0.10, 0.11)),
+          "fab_grey": (HER, 0.27, (0.42, 0.42, 0.41)), "rug_cream": (HER, 0.45, (0.70, 0.66, 0.58)),
+          "rug_blue": (HER, 0.45, (0.30, 0.36, 0.42)), "rug_warm": (HER, 0.45, (0.55, 0.42, 0.32)),
+          "curtain": (LIN, 0.27, (0.84, 0.82, 0.77)), "towel": (LIN, 0.20, (0.86, 0.85, 0.83))}
+    for k, (src, size, c) in F_.items():
+        _ph_textile("MAT-" + k, src, size, c, contrast=0.8, normal=1.2 if k.startswith("rug") else 1.0)
         MATN[k] = "MAT-" + k
-    m = _fabric("MAT-leather_tan", (0.36, 0.20, 0.11), rough=0.48, sheen=0.0, bump=0.06, scale=180.0)
-    MATN["leather"] = m.name
+    _ph_textile("MAT-leather_tan", "fabric_leather_01", 0.4, None, sheen=0.0)
+    MATN["leather"] = "MAT-leather_tan"
     _art("MAT-art_a", (0.82, 0.78, 0.70), (0.42, 0.47, 0.42), (0.12, 0.15, 0.18), 1.8, seed=21)
     _art("MAT-art_b", (0.85, 0.82, 0.76), (0.62, 0.38, 0.24), (0.20, 0.17, 0.15), 1.5, seed=22)
     _art("MAT-art_c", (0.80, 0.80, 0.78), (0.30, 0.38, 0.46), (0.08, 0.10, 0.14), 1.3, seed=23)
@@ -209,42 +241,48 @@ def facing_frame(x, y, facing):
 
 # ------------------------------------------------------------------ seating and beds
 def sofa(B, x, y, facing, w=2.4, depth=0.95, fab="fab_oat", accent=("fab_sage", "fab_white"), seats=3, base=0.0):
+    """Track-arm sofa: upholstered frame with loose seat and back cushions and two throw pillows."""
     F = facing_frame(x, y, facing)
     z = base
     for sx in (-w / 2 + 0.08, w / 2 - 0.08):
         for dd in (0.08, depth - 0.08):
-            B.box("hw", F, sx - 0.025, sx + 0.025, dd - 0.025, dd + 0.025, z, z + 0.12)
-    B.box(fab, F, -w / 2, w / 2, 0.0, depth, z + 0.12, z + 0.40)
-    B.box(fab, F, -w / 2, w / 2, 0.0, 0.2, z + 0.40, z + 0.84)
-    B.box(fab, F, -w / 2, -w / 2 + 0.2, 0.2, depth, z + 0.40, z + 0.63)
-    B.box(fab, F, w / 2 - 0.2, w / 2, 0.2, depth, z + 0.40, z + 0.63)
-    sw = (w - 0.4) / seats
+            B.box("oak", F, sx - 0.025, sx + 0.025, dd - 0.025, dd + 0.025, z, z + 0.13)
+    B.box(fab, F, -w / 2, w / 2, 0.0, depth, z + 0.13, z + 0.33)                 # deck
+    B.box(fab, F, -w / 2, w / 2, 0.0, 0.16, z + 0.33, z + 0.80)                  # back
+    B.box(fab, F, -w / 2, -w / 2 + 0.17, 0.16, depth, z + 0.33, z + 0.62)        # arms
+    B.box(fab, F, w / 2 - 0.17, w / 2, 0.16, depth, z + 0.33, z + 0.62)
+    sw = (w - 0.34) / seats
     for i in range(seats):
-        a = -w / 2 + 0.2 + i * sw
-        B.box(fab, F, a + 0.01, a + sw - 0.01, 0.22, depth + 0.02, z + 0.40, z + 0.53)
-        B.box(fab, F, a + 0.02, a + sw - 0.02, 0.2, 0.40, z + 0.53, z + 0.90)
-    for i, sx in enumerate((-w / 2 + 0.42, w / 2 - 0.42)):
-        B.box(accent[i % len(accent)], F, sx - 0.22, sx + 0.22, 0.38, 0.52, z + 0.55, z + 0.95)
+        a = -w / 2 + 0.17 + i * sw
+        B.cushion(fab, F, a + 0.005, a + sw - 0.005, 0.30, depth + 0.03, z + 0.32, z + 0.50, e=0.32, ez=0.55)
+        B.cushion(fab, F, a + 0.01, a + sw - 0.01, 0.14, 0.40, z + 0.46, z + 0.92, e=0.34, ez=0.5)
+    for i, sx in enumerate((-w / 2 + 0.44, w / 2 - 0.44)):
+        B.cushion(accent[i % len(accent)], F, sx - 0.23, sx + 0.23, 0.36, 0.54, z + 0.50, z + 0.94, e=0.5, ez=0.7)
 
 
 def bed(B, x, y, facing, size="queen", fab="fab_oat", accent="fab_sage"):
+    """Upholstered platform bed: channel headboard, oak rails, mattress, duvet, sleeping and accent pillows, throw."""
     w, ln = (1.93, 2.03) if size == "king" else (1.53, 2.03)
     F = facing_frame(x, y, facing)
-    B.box(fab, F, -w / 2 - 0.08, w / 2 + 0.08, 0.0, 0.10, 0.0, 1.32)             # headboard
-    B.box("oak", F, -w / 2 - 0.04, w / 2 + 0.04, 0.10, ln + 0.14, 0.14, 0.34)    # frame
+    n_ch = 5 if size == "king" else 4
+    cw = (w + 0.16) / n_ch
+    B.box("oak", F, -w / 2 - 0.08, w / 2 + 0.08, 0.0, 0.05, 0.0, 1.30)
+    for i in range(n_ch):                                                        # channel-tufted headboard
+        a = -w / 2 - 0.08 + i * cw
+        B.cushion(fab, F, a + 0.004, a + cw - 0.004, 0.04, 0.13, 0.36, 1.32, e=0.3, ez=0.3)
+    B.box("oak", F, -w / 2 - 0.04, w / 2 + 0.04, 0.10, ln + 0.14, 0.14, 0.34)
     for sx in (-w / 2 + 0.05, w / 2 - 0.05):
         for dd in (0.2, ln + 0.05):
             B.box("oak", F, sx - 0.04, sx + 0.04, dd - 0.04, dd + 0.04, 0.0, 0.14)
-    B.box("fab_white", F, -w / 2, w / 2, 0.12, ln + 0.10, 0.34, 0.60)            # mattress
-    B.box("fab_white", F, -w / 2 - 0.03, w / 2 + 0.03, 0.62, ln + 0.13, 0.50, 0.66)   # duvet
-    B.box(accent, F, -w / 2 - 0.04, w / 2 + 0.04, ln - 0.45, ln + 0.14, 0.52, 0.675)  # throw at the foot
-    n = 2
-    pw = w / n
-    for i in range(n):
+    B.cushion("fab_white", F, -w / 2, w / 2, 0.12, ln + 0.10, 0.33, 0.61, e=0.22, ez=0.3)          # mattress
+    B.cushion("fab_white", F, -w / 2 - 0.05, w / 2 + 0.05, 0.60, ln + 0.14, 0.52, 0.70, e=0.25, ez=0.6)   # duvet
+    B.cushion(accent, F, -w / 2 - 0.06, w / 2 + 0.06, ln - 0.50, ln + 0.15, 0.56, 0.715, e=0.25, ez=0.6)  # throw
+    pw = w / 2
+    for i in range(2):
         a = -w / 2 + i * pw
-        B.box("fab_white", F, a + 0.05, a + pw - 0.05, 0.14, 0.50, 0.60, 0.76)
-        B.box(fab, F, a + 0.10, a + pw - 0.10, 0.44, 0.62, 0.60, 0.92)
-    B.box(accent, F, -0.32, 0.32, 0.60, 0.72, 0.62, 0.88)
+        B.cushion("fab_white", F, a + 0.04, a + pw - 0.04, 0.13, 0.52, 0.59, 0.80, e=0.5, ez=0.7)
+        B.cushion(fab, F, a + 0.10, a + pw - 0.10, 0.44, 0.62, 0.60, 0.98, e=0.5, ez=0.7)
+    B.cushion(accent, F, -0.33, 0.33, 0.60, 0.74, 0.62, 0.92, e=0.5, ez=0.7)
 
 
 def bench(B, x, y, facing, w=1.3, fab="fab_oat"):
@@ -252,7 +290,7 @@ def bench(B, x, y, facing, w=1.3, fab="fab_oat"):
     for sx in (-w / 2 + 0.06, w / 2 - 0.06):
         B.box("oak", F, sx - 0.03, sx + 0.03, 0.05, 0.40, 0.0, 0.36)
     B.box("oak", F, -w / 2, w / 2, 0.0, 0.45, 0.36, 0.40)
-    B.box(fab, F, -w / 2 + 0.01, w / 2 - 0.01, 0.01, 0.44, 0.40, 0.48)
+    B.cushion(fab, F, -w / 2 + 0.01, w / 2 - 0.01, 0.01, 0.44, 0.39, 0.50, e=0.25, ez=0.6)
 
 
 def stool(B, x, y, seat=0.66):
@@ -390,15 +428,26 @@ def curtains(B, o, key="curtain", panel=0.55, top=2.62):
 
 
 # ------------------------------------------------------------------ bath and utility fixtures
+TUB_PROFILE = [(0.0, 0.03), (0.78, 0.03), (0.90, 0.07), (0.97, 0.30), (1.0, 0.56), (1.0, 0.585), (0.955, 0.585),
+               (0.915, 0.32), (0.84, 0.16), (0.68, 0.115), (0.0, 0.11)]
+BOWL_PROFILE = [(0.0, 0.0), (0.45, 0.0), (0.85, 0.035), (1.0, 0.115), (1.0, 0.13), (0.945, 0.13), (0.82, 0.055),
+                (0.42, 0.022), (0.0, 0.02)]
+
+
 def toilet(B, x, y, facing):
+    """Two-piece toilet: hollow elongated bowl on a pedestal, seat and lid, tank with lid and flush button."""
     F = facing_frame(x, y, facing)
-    B.box("porcelain", F, -0.19, 0.19, 0.0, 0.19, 0.38, 0.80)
-    B.box("porcelain", F, -0.20, 0.20, -0.005, 0.20, 0.80, 0.83)
-    c = F.p(0.0, 0.44, 0.0)
-    B.ellipsoid("porcelain", (c[0], c[1], 0.27), 0.19 if abs(F.u.x) > 0.5 else 0.25, 0.25 if abs(F.u.x) > 0.5 else 0.19, 0.2, seg=20)
-    B.box("porcelain", F, -0.12, 0.12, 0.18, 0.48, 0.0, 0.22)
-    c2 = F.p(0.0, 0.43, 0.0)
-    B.ellipsoid("porcelain", (c2[0], c2[1], 0.415), 0.185 if abs(F.u.x) > 0.5 else 0.235, 0.235 if abs(F.u.x) > 0.5 else 0.185, 0.02, seg=20)
+    c = F.xy(0.0, 0.47)
+    B.lathe("porcelain", c, [(0.0, 0.0), (0.62, 0.0), (0.66, 0.10), (0.58, 0.20), (0.80, 0.30), (1.0, 0.385), (1.0, 0.40),
+                              (0.90, 0.40), (0.80, 0.33), (0.55, 0.22), (0.0, 0.20)], sx=0.185, sy=0.265, facing=facing)
+    B.lathe("porcelain", c, [(0.62, 0.40), (1.03, 0.40), (1.03, 0.418), (0.62, 0.418)], sx=0.185, sy=0.265,
+            facing=facing, closed=True)
+    lid = F.xy(0.0, 0.215)
+    B.box("porcelain", F, -0.17, 0.17, 0.195, 0.225, 0.42, 0.80)                 # lid, raised against the tank
+    B.box("porcelain", F, -0.12, 0.12, 0.10, 0.30, 0.0, 0.36)                    # pedestal back
+    B.box("porcelain", F, -0.19, 0.19, 0.0, 0.19, 0.40, 0.79)                    # tank
+    B.box("porcelain", F, -0.20, 0.20, -0.005, 0.20, 0.79, 0.82)
+    B.cyl("steel", F.xy(0.0, 0.10), 0.022, 0.82, 0.826, seg=14)
 
 
 def vanity(B, x, y, facing, w=1.5, sinks=1, key="oak", room="", mirror=True, towers=False):
@@ -406,18 +455,20 @@ def vanity(B, x, y, facing, w=1.5, sinks=1, key="oak", room="", mirror=True, tow
     base_cabinet(B, F, -w / 2, w / 2, 0.0, z_top=0.83, depth=0.54, key=key, n=max(2, round(w / 0.5)), splash=0.1)
     for i in range(sinks):
         sc = (i + 0.5) * w / sinks - w / 2
-        c = F.p(sc, 0.29, 0.0)
-        elong = abs(F.u.x) > 0.5
-        B.ellipsoid("porcelain", (c[0], c[1], 0.868), 0.24 if elong else 0.17, 0.17 if elong else 0.24, 0.018, seg=24)
-        B.ellipsoid("basin", (c[0], c[1], 0.878), 0.20 if elong else 0.13, 0.13 if elong else 0.20, 0.012, seg=20)
-        f = F.p(sc, 0.07, 0.0)
-        B.cyl("brass", (f[0], f[1]), 0.012, 0.86, 1.06, seg=10)
-        B.rod("brass", (f[0], f[1], 1.05), F.p(sc, 0.2, 1.05), 0.01, seg=8)
+        c = F.xy(sc, 0.30)
+        B.lathe("porcelain", c, [(r, 0.86 + z) for r, z in BOWL_PROFILE], sx=0.20, sy=0.20, facing=facing)   # vessel basin
+        f = F.xy(sc, 0.065)
+        B.cyl("brass", f, 0.014, 0.86, 1.17, seg=12)
+        B.rod("brass", (f[0], f[1], 1.16), F.p(sc, 0.24, 1.16), 0.011, seg=8)
+        B.rod("brass", F.p(sc, 0.24, 1.16), F.p(sc, 0.24, 1.12), 0.011, seg=8)
+        B.box("brass", F, sc + 0.06, sc + 0.075, 0.05, 0.09, 0.86, 0.90)
         if mirror:
             mw = min(0.8, w / sinks - 0.25)
-            B.box("hw", F, sc - mw / 2, sc + mw / 2, 0.0, 0.02, 1.08, 2.08)
-            B.box("mirror", F, sc - mw / 2 + 0.02, sc + mw / 2 - 0.02, 0.02, 0.024, 1.10, 2.06)
+            B.box("hw", F, sc - mw / 2, sc + mw / 2, 0.0, 0.02, 1.12, 2.10)
+            B.box("mirror", F, sc - mw / 2 + 0.02, sc + mw / 2 - 0.02, 0.02, 0.024, 1.14, 2.08)
             LAMPS.append((*F.xy(sc, 0.12), 2.2, "sconce", room))
+            B.box("hw", F, sc - 0.20, sc + 0.20, 0.0, 0.05, 2.17, 2.20)                    # vanity light bar
+            B.cyl("shade", F.xy(sc, 0.06), 0.035, 2.16, 2.21, seg=12)
     if towers:
         for sx in (-w / 2 - 0.42, w / 2 + 0.02):
             B.box(key, F, sx, sx + 0.40, 0.0, 0.40, 0.0, 2.2)
@@ -425,14 +476,14 @@ def vanity(B, x, y, facing, w=1.5, sinks=1, key="oak", room="", mirror=True, tow
 
 
 def tub(B, x, y, long_axis=(0, 1), w=0.82, ln=1.75, h=0.58):
+    """Freestanding soaking tub: hollow shell with a rolled rim, floor-mounted filler."""
+    k = h / 0.585
+    B.lathe("porcelain", (x, y), [(r, z * k) for r, z in TUB_PROFILE], sx=w / 2, sy=ln / 2, facing=long_axis, seg=44)
     F = Frame((x, y), long_axis)
-    elong = abs(F.u.x) > 0.5
-    rx, ry = (ln / 2, w / 2) if elong else (w / 2, ln / 2)
-    B.ellipsoid("porcelain", (x, y, h * 0.52), rx, ry, h * 0.56, seg=28)
-    B.ellipsoid("basin", (x, y, h + 0.02), rx - 0.07, ry - 0.07, 0.03, seg=24)
     f = F.p(-ln / 2 - 0.12, 0.0, 0.0)
-    B.cyl("brass", (f[0], f[1]), 0.016, 0.0, 0.95, seg=10)
-    B.rod("brass", (f[0], f[1], 0.94), F.p(-ln / 2 + 0.12, 0.0, 0.94), 0.013, seg=8)
+    B.cyl("brass", (f[0], f[1]), 0.018, 0.0, 0.98, seg=12)
+    B.rod("brass", (f[0], f[1], 0.97), F.p(-ln / 2 + 0.14, 0.0, 0.97), 0.014, seg=8)
+    B.rod("brass", F.p(-ln / 2 + 0.14, 0.0, 0.97), F.p(-ln / 2 + 0.14, 0.0, 0.92), 0.014, seg=8)
 
 
 def shower(B, x0, y0, x1, y1, glass_sides, door_side=None, room=""):

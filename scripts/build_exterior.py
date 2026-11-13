@@ -125,12 +125,19 @@ Y_BUMP = PX(0, 1001)[1] - 0.1          # the bath / closet bump-out starts here;
 gable(GW, Y_JJ, XR, Y_BUMP, "y", CEIL, over=(0.0, 0.45), ends=(True, False),
       holes_a=[rect_cw(GW + 0.17, K["YA0"] - 0.14, K["XA"] + 0.05, K["YA1"] + 0.14)],
       holes_b=[rect_cw(K["XDS"] - 0.05, K["YD0"] - 0.14, K["XD"] + 0.14, K["YD1"] + 0.14)])
-gable(GW, Y_BUMP, XR, Y_DIN, "y", CEIL, over=(0.0, 0.0), ends=(False, True))
 gable(GW, Y_B3, PX(1811, 0)[0], Y_JJ, "y", CEIL, ends=(True, False))      # garage front brick gable
 # G4 primary suite
 gable(X_PS0, Y_DIN - 0.4, X_PS1, Y_PSB, "y", CEIL, over=(0.0, 0.45), ends=(False, True))
 # G5 dining / kitchen wing
-gable(X_DIN, 12.4, X_HALL, Y_DIN, "y", CEIL + 0.36, over=(0.0, 0.0), ends=(False, True))   # clears the kitchen tray
+# G5 rear spine: the tall north-south roof over dining, kitchen side, mudroom, primary hall, bath and closet.
+# The back, left and right elevations all show it: ridge about 8.4-8.6 m near x = 20, eaves over the outdoor-living
+# posts and the east wall, a board-and-batten gable facing the back yard behind the outdoor fireplace chimney.
+SP_X0, SP_X1, SP_Y0, SP_PL, SP_PITCH = 13.3, PX(2070, 0)[0], 11.4, CEIL + 0.30, 0.72
+SPINE_RIDGE = gable(SP_X0, SP_Y0, SP_X1, Y_DIN, "y", SP_PL, pitch=SP_PITCH, over=(0.0, 0.3), ends=(True, True))
+Y_B0 = PX(0, 1001)[1]
+band(XR - WT, SP_Y0, XR, Y_B0, CEIL, SP_PL + (SP_X1 - XR) * SP_PITCH)        # east wall up to the higher eave
+band(XR, Y_B0, SP_X1, Y_B0 + WT, CEIL, SP_PL)                                # bump-out south return
+band(SP_X1 - WT, Y_B0, SP_X1, Y_DIN, CEIL, SP_PL)                            # bump-out east wall
 # G6 outdoor living, low gable
 gable(PX(1035, 0)[0] - 0.15, Y_DIN, X_PS0, PX(0, 70)[1] + 0.15, "x", CEIL + 0.25, pitch=5.0 / 12.0,
       ends=(True, False), base=CEIL + 0.25)
@@ -179,12 +186,6 @@ for yy in (YD0 - 0.07, YD1 + 0.07):                                       # chee
     add_profile(gwall, (K["XDS"], yy), (1, 0), 0.07,
                 [(0.0, ZD + 0.2), (XD + 0.14 - K["XDS"], ZD + 0.2), (XD + 0.14 - K["XDS"], CEIL + 0.15),
                  (K["XE"] - K["XDS"] + 0.3, K["ZK"] + 0.3)])
-
-# primary bath bump-out: low shed roof (brick block on the right elevation)
-XB0, XB1 = XR - 0.2, PX(2070, 0)[0]
-slab(roof, rect_ccw(XB0, PX(0, 1001)[1] - 0.3, XB1 + 0.35, PX(0, 427)[1] + 0.3), [],
-     lambda x, y: CEIL + 0.75 - (x - XB0) * 0.25, 0.18)
-band(XB1 - WT, PX(0, 1001)[1], XB1, PX(0, 427)[1], CEIL, CEIL + 0.45)
 
 # ------------------------------------------------------------------ porches
 porch = bmesh.new()      # slabs / steps (concrete)
@@ -236,4 +237,4 @@ for nm, b in (("GEO-roof_shingle", roof), ("GEO-roof_metal", metal), ("GEO-upper
               ("GEO-chimneys", chim)):
     ob = new_obj(nm, b, col)
     fix_normals(ob)
-print("ridge main %.2f" % RIDGE1, [(o.name, len(o.data.polygons)) for o in col.objects])
+print("ridge main %.2f spine %.2f" % (RIDGE1, SPINE_RIDGE), [(o.name, len(o.data.polygons)) for o in col.objects])

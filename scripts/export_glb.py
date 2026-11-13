@@ -12,6 +12,7 @@ GROUPS = {
     "camellia_millwork": ["COL-millwork"],
     "camellia_exterior": ["COL-exterior", "COL-site"],
     "camellia_cameras_lights": ["COL-cameras", "COL-lights"],
+    "camellia_landscape": ["COL-landscape"],        # 14 instances of one Poly Haven tree (shared mesh)
 }
 fcol = bpy.data.collections.get("COL-furniture")
 if fcol:

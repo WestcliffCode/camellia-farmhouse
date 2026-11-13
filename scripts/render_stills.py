@@ -32,9 +32,9 @@ for n in names:
     if cam is None:
         print("no camera", n)
         continue
-    mk = next((m for m in scene.timeline_markers if m.camera == cam), None)
-    if mk is not None:
-        scene.frame_set(mk.frame)        # markers bind cameras to frames; render on this camera's frame
+    for m in scene.timeline_markers:     # markers bind cameras to frames; unbind them in this (unsaved) session
+        m.camera = None
+    scene.frame_set(1)
     scene.camera = cam
     scene.render.filepath = os.path.join(out, n + ".png")
     t = time.time()

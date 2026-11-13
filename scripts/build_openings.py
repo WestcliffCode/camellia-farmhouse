@@ -276,7 +276,7 @@ def build_door(o):
             best = (dist, sgn, hinge)
     _, sgn, hinge = best
     base = -u * sgn
-    open_deg = 172 if "linen" in (na, nb) else 86        # linen door folds flat so it clears the hall
+    open_deg = 172 if (na in OPEN_CLOSETS or nb in OPEN_CLOSETS) else 86      # shown-open closet doors fold flat against the wall
     ang = 0.0 if closed else math.radians(open_deg) * (-sgn * into)
     bm, bg = leaf_mesh(W, Ht, style)
     place_leaf(o["name"], bm, bg, hinge, base, ang, W=W)

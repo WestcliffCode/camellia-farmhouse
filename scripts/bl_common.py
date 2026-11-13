@@ -218,8 +218,9 @@ def in_footprint(pt):
     return any(pip(pt, f["outer"]) for f in S["footprint"])
 
 
-def uv_box(ob, layer="UVMap"):
-    """World-scale box UVs in metres: u along the horizontal tangent, v up the face."""
+def uv_box(ob, layer="UVMap", axis=False):
+    """World-scale box UVs in metres: u along the horizontal tangent, v up the face.
+    axis=True projects along the dominant axis instead, which stays continuous over curved (soft) surfaces."""
     me = ob.data
     bm = bmesh.new()
     bm.from_mesh(me)
@@ -227,7 +228,12 @@ def uv_box(ob, layer="UVMap"):
     Z = Vector((0, 0, 1))
     for f in bm.faces:
         n = f.normal
-        if abs(n.z) > 0.999 or n.length < 1e-6:
+        if axis:
+            ax, ay, az = abs(n.x), abs(n.y), abs(n.z)
+            for l in f.loops:
+                c = l.vert.co
+                l[uv].uv = (c.x, c.y) if az >= ax and az >= ay else ((c.y, c.z) if ax >= ay else (c.x, c.z))
+        elif abs(n.z) > 0.999 or n.length < 1e-6:
             for l in f.loops:
                 l[uv].uv = (l.vert.co.x, l.vert.co.y)
         else:
@@ -362,13 +368,74 @@ class Builder:
         for v in m["verts"]:
             v.co = Vector((v.co.x * rx + center[0], v.co.y * ry + center[1], v.co.z * rz + center[2]))
 
+    SOFT_KEYS = ("fab_", "leather", "rug_", "towel", "curtain", "porcelain")
+
+    def cushion(self, key, F, s0, s1, d0, d1, z0, z1, e=0.42, ez=0.6, seg=14):
+        """Upholstered cushion: a superellipsoid (soft-cornered, slightly domed box)."""
+        b = self.bm(key)
+        a_, b_, c_ = (s1 - s0) / 2, (d1 - d0) / 2, (z1 - z0) / 2
+        cs, cd, cz = (s0 + s1) / 2, (d0 + d1) / 2, (z0 + z1) / 2
+
+        def pw(v, m):
+            return math.copysign(abs(v) ** m, v)
+        rings = []
+        for i in range(1, seg):
+            ph = -math.pi / 2 + math.pi * i / seg
+            ring = []
+            for j in range(2 * seg):
+                th = -math.pi + math.pi * j / seg
+                ring.append(b.verts.new(F.p(cs + a_ * pw(math.cos(ph), ez) * pw(math.cos(th), e),
+                                            cd + b_ * pw(math.cos(ph), ez) * pw(math.sin(th), e),
+                                            cz + c_ * pw(math.sin(ph), ez))))
+            rings.append(ring)
+        bot = b.verts.new(F.p(cs, cd, z0))
+        top = b.verts.new(F.p(cs, cd, z1))
+        n = 2 * seg
+        for i in range(len(rings) - 1):
+            for j in range(n):
+                b.faces.new((rings[i][j], rings[i][(j + 1) % n], rings[i + 1][(j + 1) % n], rings[i + 1][j]))
+        for j in range(n):
+            b.faces.new((bot, rings[0][(j + 1) % n], rings[0][j]))
+            b.faces.new((top, rings[-1][j], rings[-1][(j + 1) % n]))
+
+    def lathe(self, key, center, profile, sx=1.0, sy=1.0, facing=(0, 1), seg=36, closed=False):
+        """Revolve a profile [(r, z)] about the vertical through center, scaled to an ellipse (sx across, sy along facing)."""
+        b = self.bm(key)
+        fx, fy = facing
+        L = math.hypot(fx, fy)
+        fx, fy = fx / L, fy / L
+        rows = []
+        for r, z in profile:
+            if r < 1e-6:
+                rows.append([b.verts.new((center[0], center[1], z))])
+                continue
+            row = []
+            for j in range(seg):
+                a = 2 * math.pi * j / seg
+                lx, ly = r * sx * math.cos(a), r * sy * math.sin(a)
+                row.append(b.verts.new((center[0] + lx * fy + ly * fx, center[1] - lx * fx + ly * fy, z)))
+            rows.append(row)
+        pairs = list(zip(rows[:-1], rows[1:])) + ([(rows[-1], rows[0])] if closed else [])
+        for r0, r1 in pairs:
+            for j in range(seg):
+                k = (j + 1) % seg
+                try:
+                    if len(r0) == 1 and len(r1) > 1:
+                        b.faces.new((r0[0], r1[j], r1[k]))
+                    elif len(r1) == 1 and len(r0) > 1:
+                        b.faces.new((r0[j], r0[k], r1[0]))
+                    elif len(r0) > 1 and len(r1) > 1:
+                        b.faces.new((r0[j], r0[k], r1[k], r1[j]))
+                except ValueError:
+                    pass
+
     def finish(self, smooth_keys=()):
         out = []
         for key, b in self.bms.items():
             bmesh.ops.recalc_face_normals(b, faces=b.faces)
             ob = new_obj(f"GEO-{self.name}_{key}", b, self.col, smooth=key in smooth_keys)
             assign(ob, MAT(key))
-            uv_box(ob)
+            uv_box(ob, axis=any(k in key for k in self.SOFT_KEYS))
             out.append(ob)
         self.bms = {}
         return out
@@ -485,6 +552,18 @@ def bake_tint(img, name, hue=0.5, sat=1.0, val=1.0):
     i = i.astype(np.int32) % 6
     out = np.stack([np.choose(i, [v, q, p, p, t, v]), np.choose(i, [t, v, v, q, p, p]), np.choose(i, [p, p, t, v, v, q])], -1)
     return _write_tex(_to_srgb(out), path, name)
+
+
+def bake_recolor(img, name, color, contrast=1.0):
+    """Keep the weave / grain of a texture but dye it: luminance (normalised) times a linear-RGB colour."""
+    src = "".join(ch for ch in img.name.split(".")[0] if ch.isalnum() or ch == "_")[:40]     # cache key includes the source texture
+    path = os.path.join(TEX_DIR, f"{name}_{src}_c{color[0]:.2f}_{color[1]:.2f}_{color[2]:.2f}_k{contrast:.2f}.png")
+    if os.path.exists(path):
+        return _load_tex(path, name)
+    lin = _to_lin(_pixels(img))
+    lum = lin @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    ln = 1.0 + (lum / max(float(lum.mean()), 1e-6) - 1.0) * contrast
+    return _write_tex(_to_srgb(ln[..., None] * np.array(color, np.float32)), path, name)
 
 
 def bake_scale(img, name, mul):

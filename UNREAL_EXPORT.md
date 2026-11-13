@@ -10,12 +10,13 @@
 | `camellia_millwork.glb` | base and crown, casings, panel moulding, kitchen, coffee bar, pantry shelving, fireplaces, exterior timber |
 | `camellia_exterior.glb` | roofs, gable walls, dormers, porches, chimneys, ground, paving |
 | `camellia_furn_<room>.glb` (18 files) | furniture and decor per room; Poly Haven instances are realised into meshes |
-| `camellia_cameras_lights.glb` | 29 still cameras, the walkthrough camera with its move baked to keyframes, 180 lights |
+| `camellia_cameras_lights.glb` | 29 still cameras, 4 orthographic elevation cameras, the walkthrough camera with its move baked to keyframes, 180 lights |
+| `camellia_landscape.glb` | the 14 trees (one Poly Haven tree mesh, instanced) |
 
 ## Validation (re-import test)
-- All 22 packages import. Every mesh carries a UV set.
+- All 23 packages import. Every mesh carries a UV set.
 - Textured materials arrive with their base-colour, roughness and normal maps; glass arrives as a transmissive material (KHR_materials_transmission); lamp shades, bulbs and can lenses arrive emissive.
-- `camellia_cameras_lights.glb`: 30 cameras, 180 lights (145 spot, 34 point, 1 sun via KHR_lights_punctual) and the baked walkthrough animation.
+- `camellia_cameras_lights.glb`: 34 cameras, 180 lights (145 spot, 34 point, 1 sun via KHR_lights_punctual) and the baked walkthrough animation.
 
 ## Conventions
 - Units are metres; Blender is Z-up and the GLB is written Y-up. Import into Unreal with glTF import (Interchange): scale 100 (cm), no extra rotation.
@@ -25,7 +26,7 @@
 - No lightmap UVs are authored. Use Lumen, or let Unreal generate lightmap UVs on import (most meshes are boxes and flat panels, so auto-unwrap is clean).
 - Collision: use complex-as-simple for walls, floors and the stair; furniture can take auto convex hulls.
 - Doors are separate objects with the origin on the hinge (`GEO-doorleaf_*`), ready to animate or drive from Blueprints.
-- The trees (`COL-landscape`, one 1.15 M-polygon Poly Haven tree instanced 14 times) are left out of the packages on purpose; use engine foliage instead.
+- The trees ship in their own package (`camellia_landscape.glb`, 116 MB: one 1.15 M-polygon Poly Haven tree instanced 14 times) so they can be loaded, swapped for engine foliage or skipped independently.
 
 ## Cameras
 - Still cameras are `CAM-<room>`; in the .blend, timeline markers at frames 2001-2029 bind one camera per frame.
