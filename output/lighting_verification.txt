@@ -15,3 +15,19 @@ Direct sun reaching interior sample points through glazing (lit / tested; ray te
   bedroom_4          12 /  675
   hutch_niche         2 /  675
   office              1 /  675
+
+Sun direction sweep (same ray test, sun 4.1 deg above the horizon; azimuth measured from the house's back axis toward the west):
+  azimuth  rooms with >=3% of points sunlit  summed sunlit fraction
+   -10       7                                2.21
+   -20       7                                1.98   <- chosen (18.8 deg): near the maximum of direct sun indoors
+   -30       8                                1.66
+   -40       8                                1.28
+   -50       9                                1.55
+   -60       8                                1.28
+   -70       6                                0.99
+   -80       6                                0.82
+   -90       4                                0.77
+Design intent: the sun sits behind the house, so rooms glazed to the back and west (great room, kitchen, dining, game room,
+primary suite, back vestibule, foyer via the family room opening) take the direct beams. Rooms glazed only to the street
+(office, bedrooms 2 and 3) face away from a setting sun by construction; they are lit by sky glow through the windows and
+by their lamps and recessed cans, which is the "soft practical lighting" half of the brief.

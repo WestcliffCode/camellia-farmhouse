@@ -234,8 +234,18 @@ def soften(obs, width=0.03):
             ob.visible_shadow = False
 
 
-def facing_frame(x, y, facing):
-    """Frame whose d axis points along `facing` (front of the piece); origin = back-centre on the floor."""
+def facing_frame(x, y, facing, snap=True):
+    """Frame whose d axis points along `facing` (front of the piece); origin = back-centre on the floor.
+    If a wall face lies within 35 cm of the origin (either side), the origin is moved onto that face, so
+    wall-backed pieces sit exactly on the built wall rather than on a nominal coordinate."""
+    if snap:
+        walls_ob = bpy.data.objects.get("GEO-walls")
+        fl = math.hypot(facing[0], facing[1])
+        f = Vector((facing[0] / fl, facing[1] / fl, 0.0))
+        if walls_ob is not None:
+            hit, loc, nrm, idx = walls_ob.ray_cast(Vector((x, y, 0.3)) + f * 0.35, -f, distance=0.7)
+            if hit and nrm.dot(f) > 0.7:
+                x, y = loc.x, loc.y
     return Frame((x, y), (facing[1], -facing[0]))
 
 
@@ -304,7 +314,7 @@ def stool(B, x, y, seat=0.66):
 
 # ------------------------------------------------------------------ tables and storage
 def table(B, x, y, w, d, h=0.75, key="oak", legs="post", facing=(0, 1), thick=0.045):
-    F = facing_frame(x, y, facing)
+    F = facing_frame(x, y, facing, snap=False)
     B.box(key, F, -w / 2, w / 2, -d / 2, d / 2, h - thick, h)
     if legs == "trestle":
         for sx in (-w / 2 + 0.35, w / 2 - 0.35):
@@ -348,7 +358,7 @@ def console(B, x, y, facing, w=1.4, h=0.82, d=0.36, key="oak"):
 
 
 def rug(B, x, y, w, d, key="rug_cream", facing=(0, 1), z=0.012):
-    F = facing_frame(x, y, facing)
+    F = facing_frame(x, y, facing, snap=False)
     B.box(key, F, -w / 2, w / 2, -d / 2, d / 2, z, z + 0.012)
 
 
@@ -409,9 +419,14 @@ def curtains(B, o, key="curtain", panel=0.55, top=2.62):
     d0 = sgn * (o["t"] / 2 + 0.07)
     w = o["w"]
     b = B.bm(key)
+    ext = {}
     for side in (-1, 1):
+        pe = panel                                   # keep each panel inside the room (windows near a corner)
+        while pe > 0.08 and room_at(F.xy(side * (w / 2 + pe + 0.06), d0)) is None:
+            pe -= 0.05
+        ext[side] = pe
         s_in = side * (w / 2 - 0.05)
-        s_out = side * (w / 2 + panel)
+        s_out = side * (w / 2 + pe)
         N = 22
         rows = []
         for zz in (0.03, top):
@@ -423,7 +438,7 @@ def curtains(B, o, key="curtain", panel=0.55, top=2.62):
             rows.append(row)
         for i in range(N):
             b.faces.new((rows[0][i], rows[0][i + 1], rows[1][i + 1], rows[1][i]))
-    a, e = F.p(-w / 2 - panel - 0.08, d0, top + 0.03), F.p(w / 2 + panel + 0.08, d0, top + 0.03)
+    a, e = F.p(-w / 2 - ext[-1] - 0.04, d0, top + 0.03), F.p(w / 2 + ext[1] + 0.04, d0, top + 0.03)
     B.rod("hw", a, e, 0.012, seg=8)
 
 
@@ -487,7 +502,24 @@ def tub(B, x, y, long_axis=(0, 1), w=0.82, ln=1.75, h=0.58):
 
 
 def shower(B, x0, y0, x1, y1, glass_sides, door_side=None, room=""):
-    """Tiled shower in the rectangle; glass_sides is a subset of 'W','E','S','N' that are glazed."""
+    """Tiled shower in the rectangle; glass_sides is a subset of 'W','E','S','N' that are glazed.
+    Tiled sides are snapped to the built wall faces."""
+    walls_ob = bpy.data.objects.get("GEO-walls")
+    cx0, cy0 = (x0 + x1) / 2, (y0 + y1) / 2
+    if walls_ob is not None:
+        for side, d in (("W", (-1, 0)), ("E", (1, 0)), ("S", (0, -1)), ("N", (0, 1))):
+            if side in glass_sides:
+                continue
+            hit, loc, nrm, idx = walls_ob.ray_cast(Vector((cx0, cy0, 0.3)), Vector((d[0], d[1], 0.0)), distance=3.0)
+            if hit:
+                if side == "W" and abs(loc.x - x0) < 0.4:
+                    x0 = loc.x
+                elif side == "E" and abs(loc.x - x1) < 0.4:
+                    x1 = loc.x
+                elif side == "S" and abs(loc.y - y0) < 0.4:
+                    y0 = loc.y
+                elif side == "N" and abs(loc.y - y1) < 0.4:
+                    y1 = loc.y
     for side in "WESN":
         if side in glass_sides:
             a, b = {"W": ((x0, y0), (x0, y1)), "E": ((x1, y0), (x1, y1)), "S": ((x0, y0), (x1, y0)), "N": ((x0, y1), (x1, y1))}[side]

@@ -38,6 +38,11 @@ STILLS = [
     ("storage", (2.2, 8.0, 1.5), (1.2, 9.7), 16, -0.04),
     ("linen_hall", (21.9, 17.0, 1.5), (20.3, 17.0), 14, -0.04),
     ("outdoor_living", (13.9, 21.9, 1.6), (19.6, 23.8), 17, 0.02),
+    # close-ups of the pieces modeled for this house (upholstery, bed, bath fixtures, range wall)
+    ("detail_sofa", (11.0, 12.3, 1.15), (12.9, 10.5), 32, -0.06),
+    ("detail_bed", (22.6, 23.3, 1.25), (23.7, 25.6), 30, -0.08),
+    ("detail_bath", (23.3, 19.0, 1.35), (25.9, 20.2), 24, -0.06),
+    ("detail_range", (15.5, 13.5, 1.45), (17.05, 11.86), 30, -0.04),
 ]
 cams = []
 for name, loc, tgt, lens, shift in STILLS:
@@ -111,5 +116,13 @@ for i, ob in enumerate(cams):
     mk.camera = ob
 mk = scene.timeline_markers.new("walkthrough", frame=1)
 mk.camera = walk
+# orthographic elevation cameras, for checking the roof and facades against the elevation sheets
+for name, loc, rz in (("elev_front", (13.6, -60, 4.6), 0), ("elev_back", (13.6, 90, 4.6), 180),
+                      ("elev_right", (90, 13.0, 4.6), 90), ("elev_left", (-60, 13.0, 4.6), -90)):
+    cd = bpy.data.cameras.new("CAM-" + name)
+    cd.type, cd.ortho_scale, cd.clip_end = "ORTHO", 34, 300
+    ob = bpy.data.objects.new("CAM-" + name, cd)
+    ob.location, ob.rotation_euler = loc, (math.radians(90), 0, math.radians(rz))
+    col.objects.link(ob)
 scene.camera = bpy.data.objects["CAM-family"]
 print("cameras", len(cams) + 1, "walkthrough frames", FRAMES)

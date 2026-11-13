@@ -1,4 +1,4 @@
-camellia_cameras_lights.glb: meshes 2 (with UVs 2), materials 2 [textured 0, plain colour 2, transmissive 0, emissive 1], cameras 34, lights 180, actions 2
+camellia_cameras_lights.glb: meshes 2 (with UVs 2), materials 2 [textured 0, plain colour 2, transmissive 0, emissive 1], cameras 38, lights 192, actions 2
 camellia_exterior.glb: meshes 9 (with UVs 9), materials 9 [textured 6, plain colour 3, transmissive 0, emissive 0], cameras 0, lights 0, actions 0
 camellia_furn_bedroom_2.glb: meshes 16 (with UVs 16), materials 12 [textured 8, plain colour 4, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
 camellia_furn_bedroom_3.glb: meshes 14 (with UVs 14), materials 13 [textured 9, plain colour 4, transmissive 0, emissive 1], cameras 0, lights 0, actions 0

@@ -165,12 +165,12 @@ def ceil_z(room_name, x, y):
 
 kt = K["KITCHEN_TRAY"]
 CAN_ROOMS = {  # room: (spacing, watts)
-    "great_room": (1.9, 16), "office": (1.7, 14), "primary_suite": (1.9, 13), "primary_bath": (1.6, 14),
+    "great_room": (1.9, 16), "office": (1.6, 32), "primary_suite": (1.7, 20), "primary_bath": (1.6, 14),
     "bedroom_2": (1.9, 12), "bedroom_3": (1.9, 12), "bedroom_4": (1.9, 12), "game_room": (1.9, 14),
     "pantry": (1.7, 12), "family_foyer": (1.6, 12), "utility": (1.6, 12), "primary_closet": (1.6, 10),
     "primary_hall": (1.4, 10), "bed_hall": (1.6, 10), "bed_hall_s": (1.4, 10), "hall_bath": (1.4, 12),
     "powder": (1.2, 10), "jj_bath_a": (1.4, 11), "jj_bath_b": (1.4, 11), "back_vestibule": (1.3, 9),
-    "garage": (2.6, 22), "foyer": (1.8, 10), "primary_wc": (1.2, 8), "closet_b3": (1.5, 8),
+    "garage": (2.2, 36), "foyer": (1.8, 10), "primary_wc": (1.2, 8), "closet_b3": (1.5, 8),
     "holiday": (1.5, 8), "mud_vestibule": (1.2, 8), "stair": (1.6, 9), "portico": (1.6, 10),
     "storage_a": (2.0, 7), "storage_b": (2.0, 8), "linen": (1.2, 5), "closet_b2": (2.0, 6), "hutch_niche": (1.6, 6),
 }
@@ -239,8 +239,9 @@ lan = new_obj("GEO-lantern_caps", ext, col)
 assign(lan, MAT("hw"))
 uv_box(lan)
 # porch ceiling lights
-for (x, y) in ((9.5, 1.6), (16.9, 1.6), (9.0, 15.2), (16.5, 23.6), (14.2, 19.0)):
-    add_light("LGT-porch", "SPOT", (x, y, CEIL - 0.015), 14 * CAN_GAIN, size=0.05, spot=CAN_CONE)
+for (x, y) in ((9.5, 1.6), (16.9, 1.6), (9.0, 15.2), (7.0, 15.2), (14.2, 19.0), (15.0, 22.4), (15.0, 24.8),
+               (17.2, 22.4), (17.2, 24.8), (19.3, 22.4), (19.3, 24.8)):
+    add_light("LGT-porch", "SPOT", (x, y, CEIL - 0.015), 24 * CAN_GAIN, size=0.05, spot=CAN_CONE)
 
 # bonus room: cans along the flat collar, plus the dormer
 ZC = K["ZF"] + 2.74 - 0.012
