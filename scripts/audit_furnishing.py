@@ -53,7 +53,6 @@ lines = ["# Furnishing audit", "",
          f"- Instances with a footprint corner inside a wall: {len(inst_bad)} {inst_bad if inst_bad else ''}",
          f"- Modeled meshes with more than 1% of sampled vertices more than 4 cm inside a wall: {len(mesh_bad)} {mesh_bad if mesh_bad else ''}",
          f"- Materials on modeled furniture ({len(mats)}), all from the design-system palette: " + ", ".join(m[4:] for m in mats),
-         "- Remaining flags are corner contacts of 2-4 vertices each (a cabinet pull at a wall return, a tile corner, one hanging garment at a chamfered closet corner); nothing is buried in a wall.",
          "- Wall-backed pieces are snapped to the built wall faces by ray cast (`facing_frame` in `furnish_lib.py`); curtain panels are clamped to their room; shower tile is snapped to the walls.",
          "", "| Room group | Poly Haven pieces | Modeled pieces |", "| --- | --- | --- |"]
 for name, body in zip(rooms[0::2], rooms[1::2]):
@@ -64,5 +63,23 @@ for name, body in zip(rooms[0::2], rooms[1::2]):
     mk = {k: len(re.findall(r'(?<![A-Za-z_])' + k + r'\(B', body)) for k in KINDS}
     lines.append(f"| {name} | " + ", ".join(f"{k} x{v}" for k, v in sorted(ph.items())) + " | " +
                  ", ".join(f"{k} x{v}" for k, v in mk.items() if v) + " |")
+# how much of the modeled furniture surface carries Poly Haven photographic textures
+area_tex = area_plain = 0.0
+for c in furn.children:
+    for ob in c.objects:
+        if ob.type != "MESH" or not ob.data.materials:
+            continue
+        m = ob.data.materials[0]
+        b = next((n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        tex = bool(b and any(l.to_node == b and l.to_socket.name == "Base Color" for l in m.node_tree.links))
+        a_ = sum(p.area for p in ob.data.polygons)
+        if tex:
+            area_tex += a_
+        else:
+            area_plain += a_
+soft = sum(1 for c in furn.children for ob in c.objects if ob.type == "MESH" and any(md.type == "BEVEL" for md in ob.modifiers))
+lines[6:6] = [f"- Surface of modeled furniture carrying Poly Haven photographic textures (linen, wool, leather, oak, marble tile) or generated artwork: "
+              f"{100 * area_tex / max(area_tex + area_plain, 1e-6):.0f}% by area; the rest is plain-value materials (painted cabinetry, porcelain, quartz, metals, glass).",
+              f"- Upholstered and porcelain meshes with bevel + weighted-normal modifiers for soft edges: {soft}."]
 open(os.path.join(ROOT, "output", "furnishing_audit.md"), "w").write("\n".join(lines) + "\n")
 print("\n".join(lines[2:6]))

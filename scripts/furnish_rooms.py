@@ -206,12 +206,12 @@ done(B)
 
 # ------------------------------------------------------------------ baths
 B, C = R("primary_bath")
-vanity(B, 24.22, 21.26, (0, -1), w=3.0, sinks=2, key="oak", room="primary_bath", towers=True)
+vanity(B, 24.32, 21.26, (0, -1), w=2.86, sinks=2, key="oak", room="primary_bath", towers=True)
 tub(B, 26.38, 19.57, (0, 1))
 shower(B, 25.31, 16.76, 27.0, 18.48, "WN", room="primary_bath")
 toilet(B, 22.25, 17.34, (1, 0))
 rug(B, 24.2, 20.3, 1.8, 0.7, "rug_cream")
-place("potted_plant_04", 24.22, 21.02, z=0.86, col=C)
+place("potted_plant_04", 24.32, 20.85, z=0.86, col=C)
 done(B)
 
 B, C = R("hall_bath")
@@ -254,7 +254,7 @@ shelf_wall(B, 26.1, 16.65, (0, -1), w=1.7, rod_z=1.7)
 shelf_wall(B, 23.45, 14.22, (0, 1), w=1.3, levels=(0.4, 0.8, 1.2, 1.6, 2.0))
 shelf_wall(B, 26.1, 14.22, (0, 1), w=1.7, rod_z=1.7)
 # bedroom closets
-shelf_wall(B, 5.0, 7.15, (0, -1), w=2.2, rod_z=1.7)
+shelf_wall(B, 4.80, 7.15, (0, -1), w=1.86, rod_z=1.7)
 shelf_wall(B, 10.14, 7.15, (0, -1), w=2.4, d=0.36, levels=(1.85,), rod_z=1.7)
 shelf_wall(B, 3.87, 10.52, (0, -1), w=2.0, levels=(0.4, 0.85, 1.3, 1.75, 2.2))
 done(B)

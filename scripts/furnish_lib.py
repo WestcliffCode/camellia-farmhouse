@@ -520,6 +520,7 @@ def shower(B, x0, y0, x1, y1, glass_sides, door_side=None, room=""):
                     y0 = loc.y
                 elif side == "N" and abs(loc.y - y1) < 0.4:
                     y1 = loc.y
+        x0, x1, y0, y1 = x0 + 0.004, x1 - 0.004, y0 + 0.004, y1 - 0.004      # tile sits just proud of the wall faces
     for side in "WESN":
         if side in glass_sides:
             a, b = {"W": ((x0, y0), (x0, y1)), "E": ((x1, y0), (x1, y1)), "S": ((x0, y0), (x1, y0)), "N": ((x0, y1), (x1, y1))}[side]

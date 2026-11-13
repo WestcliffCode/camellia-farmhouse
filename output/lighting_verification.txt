@@ -31,3 +31,15 @@ Design intent: the sun sits behind the house, so rooms glazed to the back and we
 primary suite, back vestibule, foyer via the family room opening) take the direct beams. Rooms glazed only to the street
 (office, bedrooms 2 and 3) face away from a setting sun by construction; they are lit by sky glow through the windows and
 by their lamps and recessed cans, which is the "soft practical lighting" half of the brief.
+
+Sun coverage against the glazing design (exterior glazing whose outward normal faces the sun):
+  back_vestibule   sun-facing glazing: 1  openings  ->  230 /  675 points sunlit  yes
+  bedroom_4        sun-facing glazing: 1  openings  ->   12 /  675 points sunlit  yes
+  game_room        sun-facing glazing: 3  openings  ->  203 /  675 points sunlit  yes
+  great_room       sun-facing glazing: 4  openings  ->  123 /  357 points sunlit  yes
+  primary_suite    sun-facing glazing: 4  openings  ->   84 /  675 points sunlit  yes
+  Rooms with sun-facing glazing that receive direct sun: 5 of 5
+  Rooms glazed only away from the sun (sky glow + practicals by design): bedroom_2, bedroom_3, garage, jj_bath_a, jj_bath_b, office, primary_bath, primary_closet, utility
+
+Golden-hour criterion: golden hour is conventionally the period with the sun between 6 deg above and 4 deg below the horizon.
+Sun in the captured sky and the aligned lamp: 4.1 deg above the horizon -> inside that band. HDRI metadata: time_of_day = sunset, weather = clear.
