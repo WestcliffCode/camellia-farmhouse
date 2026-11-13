@@ -3,11 +3,11 @@ camellia_exterior.glb: meshes 9 (with UVs 9), materials 9 [textured 6, plain col
 camellia_furn_bedroom_2.glb: meshes 18 (with UVs 18), materials 16 [textured 12, plain colour 4, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
 camellia_furn_bedroom_3.glb: meshes 15 (with UVs 15), materials 16 [textured 12, plain colour 4, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
 camellia_furn_bedroom_4.glb: meshes 17 (with UVs 17), materials 16 [textured 12, plain colour 4, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
-camellia_furn_bonus.glb: meshes 13 (with UVs 13), materials 13 [textured 11, plain colour 2, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
+camellia_furn_bonus.glb: meshes 14 (with UVs 14), materials 13 [textured 11, plain colour 2, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
 camellia_furn_dining.glb: meshes 65 (with UVs 65), materials 55 [textured 52, plain colour 3, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
 camellia_furn_family.glb: meshes 91 (with UVs 91), materials 85 [textured 80, plain colour 5, transmissive 0, emissive 2], cameras 0, lights 0, actions 0
 camellia_furn_foyer.glb: meshes 14 (with UVs 14), materials 15 [textured 9, plain colour 6, transmissive 0, emissive 2], cameras 0, lights 0, actions 0
-camellia_furn_game_room.glb: meshes 22 (with UVs 22), materials 14 [textured 11, plain colour 3, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
+camellia_furn_game_room.glb: meshes 21 (with UVs 21), materials 12 [textured 9, plain colour 3, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
 camellia_furn_garage.glb: meshes 9 (with UVs 9), materials 8 [textured 6, plain colour 2, transmissive 0, emissive 0], cameras 0, lights 0, actions 0
 camellia_furn_hall_bath.glb: meshes 9 (with UVs 9), materials 9 [textured 3, plain colour 6, transmissive 0, emissive 1], cameras 0, lights 0, actions 0
 camellia_furn_jj_bath.glb: meshes 10 (with UVs 10), materials 10 [textured 3, plain colour 7, transmissive 1, emissive 1], cameras 0, lights 0, actions 0

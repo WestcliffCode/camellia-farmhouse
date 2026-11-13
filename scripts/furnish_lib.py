@@ -8,7 +8,7 @@ PH_ASSETS = ["ceiling_fan", "modern_arm_chair_01", "side_table_01", "modern_coff
              "drawer_cabinet", "modern_wooden_cabinet", "potted_plant_01", "potted_plant_02", "potted_plant_04",
              "ceramic_vase_01", "ceramic_vase_03", "wooden_bowl_01", "decorative_book_set_01",
              "modern_ceiling_lamp_01", "hanging_picture_frame_01", "standing_picture_frame_01", "ceramic_vase_02",
-             "ceramic_vase_04", "Ottoman_01", "brass_pot_01", "brass_pot_02"]
+             "ceramic_vase_04", "Ottoman_01", "brass_pot_01", "brass_pot_02", "sofa_02"]
 LAMPS = []          # (x, y, z, kind, room) for the lighting stage
 
 

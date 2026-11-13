@@ -1,11 +1,11 @@
 # Furnishing audit
 
-- Poly Haven instances: 96 placements of 27 assets. Modeled furniture meshes: 163.
+- Poly Haven instances: 98 placements of 28 assets. Modeled furniture meshes: 159.
 - Instances with a footprint corner inside a wall: 0 
 - Modeled meshes with more than 1% of sampled vertices more than 4 cm inside a wall: 0 
 - Materials on modeled furniture (32), all from the design-system palette: art_a, art_b, art_c, brass, bulb, ceramic_matte, curtain, fab_char, fab_grey, fab_navy, fab_oat, fab_rust, fab_sage, fab_white, glass, glass_dark, hardware_black, lamp_shade, leather_tan, mat_rubber, mirror, oak, porcelain, quartz, rug_blue, rug_cream, rug_warm, siding_dark, stainless, tile_marble, towel, trim_white
 - Surface of modeled furniture carrying Poly Haven photographic textures (linen, wool, leather, oak, marble, painted plaster, rubber tile) or generated artwork: 89% by area; the rest is plain-value materials (porcelain, metals, glass, lamp shades).
-- Upholstered and porcelain meshes with bevel + weighted-normal modifiers for soft edges: 41.
+- Upholstered and porcelain meshes with bevel + weighted-normal modifiers for soft edges: 37.
 - Wall-backed pieces are snapped to the built wall faces by ray cast (`facing_frame` in `furnish_lib.py`); curtain panels are clamped to their room; shower tile is snapped to the walls.
 
 | Room group | Poly Haven pieces | Modeled pieces |
@@ -19,8 +19,8 @@
 | bedroom_2 | ceramic_vase_02 x1, potted_plant_04 x1, side_table_01 x1, standing_picture_frame_01 x1 | bed x1, dresser x1, rug x1, table_lamp x1, art x1, curtains x1 |
 | bedroom_3 | ceramic_vase_03 x1, side_table_01 x1, standing_picture_frame_01 x1 | bed x1, dresser x1, rug x1, table_lamp x1, art x1, curtains x1 |
 | bedroom_4 | ceramic_vase_04 x1, potted_plant_04 x1, side_table_01 x1, standing_picture_frame_01 x1 | bed x1, dresser x1, rug x1, table_lamp x1, art x1, curtains x1 |
-| game_room | coffee_table_round_01 x1, dining_chair_02 x1, modern_wooden_cabinet x1, potted_plant_01 x1, steel_frame_shelves_01 x2 | sofa x1, round_table x1, rug x1, floor_lamp x1 |
-| bonus | Ottoman_01 x1, mid_century_lounge_chair x1, modern_coffee_table_01 x1, steel_frame_shelves_01 x1 | sofa x2, rug x1, floor_lamp x1 |
+| game_room | coffee_table_round_01 x1, dining_chair_02 x1, modern_wooden_cabinet x1, potted_plant_01 x1, sofa_02 x1, steel_frame_shelves_01 x2 | round_table x1, rug x1, floor_lamp x1 |
+| bonus | Ottoman_01 x1, mid_century_lounge_chair x1, modern_coffee_table_01 x1, sofa_02 x1, steel_frame_shelves_01 x1 | sofa x1, rug x1, floor_lamp x1 |
 | primary_bath | potted_plant_04 x1 | rug x1, toilet x1, vanity x1, tub x1, shower x1 |
 | hall_bath |  | toilet x2, vanity x2, tub x1 |
 | jj_bath |  | toilet x2, vanity x2, shower x2 |

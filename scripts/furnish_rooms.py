@@ -191,7 +191,7 @@ rug(B, 2.6, 14.9, 3.0, 3.4, "rug_blue")
 place("modern_wooden_cabinet", 0.42, 14.9, facing=(1, 0), col=C)
 GFm = facing_frame(0.15, 14.9, (1, 0))
 B.box("glassdark", GFm, -0.8, 0.8, 0.0, 0.04, 1.05, 1.95)
-sofa(B, 4.86, 14.9, (-1, 0), w=2.4, fab="fab_grey", accent=("fab_rust", "fab_navy"))
+place("sofa_02", 4.86 - 0.44, 14.9, facing=(-1, 0), col=C)                  # Poly Haven tufted leather sofa (pairs with the leather chairs)
 place("coffee_table_round_01", 2.55, 14.9, col=C)
 round_table(B, 2.5, 11.9, r=0.6)
 for fx, fy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -208,7 +208,7 @@ ZB = K["ZF"] + 0.012
 rug(B, 22.5, 4.6, 2.6, 3.2, "rug_warm", z=ZB)
 sofa(B, K["XW"] + 0.03, 4.6, (1, 0), w=2.4, fab="fab_oat", accent=("fab_navy", "fab_sage"), base=ZB)
 place("modern_coffee_table_01", 22.3, 4.6, z=ZB, facing=(1, 0), col=C)
-sofa(B, 22.5, K["Y0"] + 0.03, (0, 1), w=2.2, fab="fab_white", accent=("fab_rust", "fab_oat"), base=ZB)
+place("sofa_02", 22.5, K["Y0"] + 0.03 + 0.44, z=ZB, facing=(0, 1), col=C)      # Poly Haven tufted leather sofa
 B.box("oak", WORLD, K["XD"] - 0.55, K["XD"], K["YD0"], K["YD1"], K["ZF"], K["ZF"] + 0.42)
 B.box("fab_oat", WORLD, K["XD"] - 0.54, K["XD"] - 0.01, K["YD0"] + 0.02, K["YD1"] - 0.02, K["ZF"] + 0.42, K["ZF"] + 0.50)
 for yy, key in ((K["YD0"] + 0.5, "fab_sage"), (K["YD1"] - 0.5, "fab_navy"), ((K["YD0"] + K["YD1"]) / 2, "fab_white")):

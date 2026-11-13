@@ -107,3 +107,25 @@ Every room with exterior glazing against the two presets (points in direct sun, 
 All 16 glazed rooms receive direct golden-hour sun in at least one preset. Rooms with no exterior glazing (pantry, powder,
 closets, storage, linen, stair, halls) receive it only through openings to neighbouring rooms, or not at all.
 Renders under the sunrise preset: output/renders/final_sunrise/ (12 views; all 12 pass the same quality bar, output/render_qc_sunrise.md; sheet output/renders/contact_sunrise.png).
+
+Full-height recount (eleventh pass). The counts above sample each room at 0.5, 1.2 and 1.9 m, which misses beams from high
+windows. scripts/sun_coverage.py now samples six heights from 0.4 to 2.7 m (15 x 15 x 6 points per room). Points in direct sun:
+  sunset preset (-28 deg):   game_room 277/1350   foyer 236/1326   great_room 207/702   mud_vestibule 204/720
+                             hutch_niche 122/1350   primary_suite 113/1320   family_foyer 93/1278   bedroom_4 60/1350
+                             office 43/1350   jj_bath_a 40/1350   back_vestibule 32/1350   stair 23/1350   pantry 4/600
+  sunrise preset (152 deg):  portico 604/1350   bedroom_3 180/1350   bedroom_2 125/1170   office 90/1350   garage 69/1290
+                             foyer 45/1326   bed_hall 24/1314   hall_bath 23/1320   primary_bath 20/1194   utility 17/1350
+                             primary_closet 16/1350   bed_hall_s 12/1182   jj_bath_b 11/1350
+24 of the plan's 34 rooms receive direct sun in one preset or the other, including all 16 that have exterior glazing.
+The other 10 have no exterior glazing and no sightline to a sunlit window: closet_b2, closet_b3, holiday storage, linen,
+powder, primary hall, primary WC, storage_a, storage_b and one unnamed closet. The plan draws them without windows; they are
+lit by their recessed cans.
+Sunrise directions compared on the east-side rooms (primary bath / closet / utility) and the street-side rooms
+(bedroom 2 / bedroom 3 / garage / jj_bath_b), full-height counts:
+  152 deg (chosen)   20 / 16 / 17      125 / 180 / 69 / 11
+  145 deg            35 /  4 / 28       54 / 143 / 58 / 27
+  140 deg            43 / 28 / 19       41 / 110 / 46 / 11
+  135 deg            57 / 40 / 44       43 /  91 / 38 /  0
+  125 deg            88 / 56 / 58       57 /  36 / 18 /  0
+Turning the sunrise sun toward the east side gives those three rooms more sun and the street-side rooms less; 152 was kept
+because it is the only direction tested that leaves no glazed room without sun and gives the bedrooms the most.

@@ -34,7 +34,7 @@ The paving, porch slabs and driveway share one neutral grey material. A ray test
 | ext_front | 0 | too few | - | - | 332 | 140, 130, 123 | 24 | 1.14 |
 | ext_front_left | 23 | 201, 153, 122 | 23 | 1.65 | 170 | 130, 124, 121 | 23 | 1.08 |
 | ext_garage | 2 | too few | - | - | 1161 | 130, 131, 134 | 226 | 0.97 |
-| ext_back | 342 | 190, 148, 121 | 23 | 1.57 | 38 | 143, 114, 95 | 25 | 1.51 |
+| ext_back | 342 | 190, 148, 121 | 23 | 1.57 | 38 | 143, 115, 95 | 25 | 1.51 |
 | all four, pooled | 365 | 191, 148, 121 | 23 | 1.58 | 1701 | 132, 130, 130 | 358 | 1.02 |
 
 - Same material, sun against shade: R/B 1.58 against 1.02; hue 23 against 358 (photographed sun 24, sky opposite the sun 206).
@@ -44,7 +44,7 @@ The paving, porch slabs and driveway share one neutral grey material. A ray test
 | Render | sunlit patches RGB | hue | R/B | hue vs sun disc | hue vs sky glow |
 |---|---|---|---|---|---|
 | ext_back | 244, 230, 219 | 27 | 1.11 | +3 | +2 |
-| game_room | 211, 178, 152 | 26 | 1.39 | +2 | +1 |
+| game_room | 212, 179, 153 | 26 | 1.39 | +2 | +1 |
 | kitchen | 237, 212, 193 | 25 | 1.22 | +1 | +0 |
 | foyer | 221, 203, 186 | 28 | 1.19 | +4 | +3 |
 | primary_suite | 197, 172, 147 | 30 | 1.34 | +6 | +5 |
@@ -58,7 +58,7 @@ Shade = the 15th to 40th percentile of luminance in the frame.
 
 | View | shade RGB, lamps on | shade RGB, lamps off | mean luminance, lamps on | lamps off |
 |---|---|---|---|---|
-| game_room | 117, 82, 51 | 35, 13, 1 | 114 | 37 |
+| game_room | 114, 80, 49 | 34, 13, 1 | 114 | 37 |
 | primary_suite | 71, 51, 33 | 2, 0, 0 | 97 | 10 |
 | kitchen | 180, 132, 93 | 50, 19, 0 | 158 | 67 |
 

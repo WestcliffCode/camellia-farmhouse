@@ -1,14 +1,14 @@
 """Direct-sun coverage per room for a set of sun azimuths (run inside Blender on the built scene).
 
-For every room: a 15 x 15 grid at three heights; a point counts as sunlit when a ray toward the sun leaves the house
+For every room: a 15 x 15 grid at six heights from 0.4 to 2.7 m (so beams from high windows count); a point counts as sunlit when a ray toward the sun leaves the house
 without hitting anything but glass. Trees, porches and furniture are included. Prints a table; the chosen azimuth
-(first column) is the one lighting.py uses.
+in the first column is the sunset preset lighting.py uses, the second is its sunrise preset.
 """
 import bpy, math
 from mathutils import Vector
 exec(open("/Users/westcliff/Dev/3d-architecture/camellia-luxury-farmhouse/scripts/bl_common.py").read())
 
-AZIMUTHS = (-28.0, -18.8, -23.0, -35.0, -45.0, -55.0)          # degrees from the house's back axis toward the west
+AZIMUTHS = (-28.0, 152.0, -18.8, -45.0, 135.0, 165.0)      # first two: the sunset and sunrise presets          # degrees from the house's back axis toward the west
 ELEV = math.radians(4.1)
 scene = bpy.context.scene
 dg = bpy.context.evaluated_depsgraph_get()
@@ -42,7 +42,7 @@ for r in S["rooms"]:
             x = min(xs) + (i + 0.5) / 15 * (max(xs) - min(xs))
             y = min(ys) + (j + 0.5) / 15 * (max(ys) - min(ys))
             if pip((x, y), r["outer"]) and not any(pip((x, y), h) for h in r.get("holes", [])):
-                P += [Vector((x, y, z)) for z in (0.5, 1.2, 1.9)]
+                P += [Vector((x, y, z)) for z in (0.4, 0.9, 1.4, 1.9, 2.3, 2.7)]
     pts[r["name"]] = P
 
 res = {}
