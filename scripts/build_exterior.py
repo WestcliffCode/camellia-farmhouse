@@ -6,7 +6,7 @@ col = get_col("COL-exterior")
 K = json.loads(bpy.context.scene["camellia_shell"])
 PITCH = 10.0 / 12.0
 RT = 0.22          # roof slab thickness
-WT = 0.15          # gable wall thickness
+WT = 0.11          # gable wall thickness
 
 roof = bmesh.new()       # shingle roofs
 metal = bmesh.new()      # standing-seam porch roofs
@@ -113,6 +113,7 @@ PL1 = 4.27                        # main block plate (14 ft)
 # G1 main block, ridge E-W; east gable wall leaves the stair passage open
 yc1 = (Y_FRONT + Y_FAMB) / 2
 RIDGE1 = gable(X_WING_L, Y_FRONT, GW + 0.164, Y_FAMB, "x", PL1,
+               holes_a=[rect_cw(X_PORT0 + 0.02, Y_FRONT - 0.6, X_PORT1 - 0.02, 4.3)],   # foyer vault rises through here
                cut=(1, K["YA0"] - yc1, K["YA1"] - yc1, K["ZA"] + 0.05))
 band(X_WING_L, Y_FRONT, GW, Y_FRONT + WT, CEIL, PL1 + 0.1)            # front band above the porch roof
 band(X_WING_L, Y_FAMB - WT, X_DIN, Y_FAMB, CEIL, PL1 + 0.1)           # back band above the porch roof
@@ -120,9 +121,11 @@ band(X_WING_L, Y_FAMB - WT, X_DIN, Y_FAMB, CEIL, PL1 + 0.1)           # back ban
 gable(XL, Y_JJ, X_WING_L, Y_GAME, "y", CEIL, over=(0.45, 0.0))
 gable(PX(285, 0)[0], Y_B3, X_WING_L, Y_JJ, "y", CEIL, ends=(True, False))
 # G3 garage / service wing, ridge N-S, with cut-outs for the stair alcove and the bonus dormer
-gable(GW, Y_JJ, XR, Y_DIN, "y", CEIL, over=(0.0, 0.45),
+Y_BUMP = PX(0, 1001)[1] - 0.1          # the bath / closet bump-out starts here; no east eave beyond it
+gable(GW, Y_JJ, XR, Y_BUMP, "y", CEIL, over=(0.0, 0.45), ends=(True, False),
       holes_a=[rect_cw(GW + 0.17, K["YA0"] - 0.14, K["XA"] + 0.05, K["YA1"] + 0.14)],
       holes_b=[rect_cw(K["XDS"] - 0.05, K["YD0"] - 0.14, XR + 0.6, K["YD1"] + 0.14)])
+gable(GW, Y_BUMP, XR, Y_DIN, "y", CEIL, over=(0.0, 0.0), ends=(False, True))
 gable(GW, Y_B3, PX(1811, 0)[0], Y_JJ, "y", CEIL, ends=(True, False))      # garage front brick gable
 # G4 primary suite
 gable(X_PS0, Y_DIN - 0.4, X_PS1, Y_PSB, "y", CEIL, over=(0.0, 0.45), ends=(False, True))

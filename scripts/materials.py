@@ -46,9 +46,12 @@ def derive(src, name, size, sat=1.0, val=1.0, hue=0.5, rough_mul=1.0, normal=1.0
     """Copy a Poly Haven material; UVs are in metres, so Mapping scale = 1 / real size."""
     old = bpy.data.materials.get(name)
     if old:
-        bpy.data.materials.remove(old)
+        old.name = name + "__old"
     mat = bpy.data.materials[src].copy()
     mat.name = name
+    if old:                       # keep every existing assignment pointing at the rebuilt material
+        old.user_remap(mat)
+        bpy.data.materials.remove(old)
     nt = mat.node_tree
     b = principled(mat)
     mp = next(n for n in nt.nodes if n.type == "MAPPING")
@@ -143,13 +146,13 @@ def grass(name):
 
 
 M = {}
-M["floor_oak"] = derive("oak_wood_planks", "MAT-floor_oak", 1.5, sat=0.92, val=1.08, rough_mul=1.15)
+M["floor_oak"] = derive("oak_wood_planks", "MAT-floor_oak", 1.5, sat=0.72, val=1.0, rough_mul=1.15)
 M["limestone"] = derive("concrete_brick_wall_001", "MAT-limestone", 1.7, sat=0.45, val=1.35)
-M["brick"] = derive("brick_wall_003", "MAT-brick", 3.2, sat=0.75, val=1.12)
+M["brick"] = derive("brick_wall_003", "MAT-brick", 2.2, sat=1.0, val=1.15, hue=0.503)
 M["shingle"] = derive("roof_slates_03", "MAT-roof_shingle", 3.0, sat=0.35, val=0.42)
 M["concrete"] = derive("concrete_floor", "MAT-concrete", 2.08, sat=0.18, val=1.25)
 M["tile"] = derive("floor_tiles_04", "MAT-tile_marble", 2.4, sat=0.5, val=1.2, rough_mul=0.8)
-M["oak"] = derive("oak_veneer_03", "MAT-oak", 1.0, sat=1.45, val=0.82, hue=0.515)
+M["oak"] = derive("oak_veneer_03", "MAT-oak", 1.0, sat=1.15, val=0.85, hue=0.51)
 M["timber"] = derive("oak_veneer_03", "MAT-timber", 1.0, sat=1.5, val=0.7, hue=0.51, rough_mul=1.2)
 M["oak_ceiling"] = derive("oak_veneer_03", "MAT-oak_ceiling", 1.0, sat=1.4, val=0.62, hue=0.51)
 M["white"] = solid("MAT-paint_white", (0.86, 0.85, 0.82), 0.55, bump=0.05)
@@ -230,7 +233,9 @@ for p in upper.data.polygons:
         p.material_index = 2
     else:
         p.material_index = 0
-        if abs(n.z) < 0.1:
+        q = (x + n.x * 0.25, y + n.y * 0.25)
+        faces_room = z < 4.4 and room_at(q) is not None      # inner face of a gable above a vaulted room
+        if abs(n.z) < 0.1 and not faces_room:
             siding_faces.append(([upper.data.vertices[i].co.copy() for i in p.vertices], n.copy()))
 
 # ------------------------------------------------------------------ board-and-batten strips
@@ -322,6 +327,7 @@ for ob in bpy.data.objects:
             assign(ob, M[key])
             done += 1
             break
+assign(bpy.data.objects["GEO-ceiling_primary_suite"], M["charcoal"])
 # stair: oak treads, white risers and sides
 st = bpy.data.objects["GEO-stair"]
 st.data.materials.clear()
