@@ -50,31 +50,34 @@ def gable(x0, y0, x1, y1, axis, plate, pitch=PITCH, over=0.45, rake=0.30, ends=(
     cut = (end_index, sa, sb, ztop) leaves a passage in that gable wall."""
     bm = bm or roof
     base = CEIL if base is None else base
+    oa, ob = (over, over) if isinstance(over, (int, float)) else over
+    wall_plate = plate
+    plate = plate + RT        # heel: the slab underside meets the wall plate, so nothing dips below a ceiling
     if axis == "y":
         xm, half = (x0 + x1) / 2, (x1 - x0) / 2
         ya, yb = y0 - (rake if ends[0] else 0), y1 + (rake if ends[1] else 0)
-        slab(bm, rect_ccw(x0 - over, ya, xm, yb), list(holes_a), lambda x, y: plate + (x - x0) * pitch)
-        slab(bm, rect_ccw(xm, ya, x1 + over, yb), list(holes_b), lambda x, y: plate + (x1 - x) * pitch)
+        slab(bm, rect_ccw(x0 - oa, ya, xm, yb), list(holes_a), lambda x, y: plate + (x - x0) * pitch)
+        slab(bm, rect_ccw(xm, ya, x1 + ob, yb), list(holes_b), lambda x, y: plate + (x1 - x) * pitch)
         for i, yy in enumerate((y0, y1)):
             if ends[i]:
                 c = (xm, yy + (WT / 2 if i == 0 else -WT / 2))
-                _gable_wall(c, (1, 0), half, plate, pitch, base, cut if cut and cut[0] == i else None)
+                _gable_wall(c, (1, 0), half, wall_plate, pitch, base, cut if cut and cut[0] == i else None)
     else:
         ym, half = (y0 + y1) / 2, (y1 - y0) / 2
         xa, xb = x0 - (rake if ends[0] else 0), x1 + (rake if ends[1] else 0)
-        slab(bm, rect_ccw(xa, y0 - over, xb, ym), list(holes_a), lambda x, y: plate + (y - y0) * pitch)
-        slab(bm, rect_ccw(xa, ym, xb, y1 + over), list(holes_b), lambda x, y: plate + (y1 - y) * pitch)
+        slab(bm, rect_ccw(xa, y0 - oa, xb, ym), list(holes_a), lambda x, y: plate + (y - y0) * pitch)
+        slab(bm, rect_ccw(xa, ym, xb, y1 + ob), list(holes_b), lambda x, y: plate + (y1 - y) * pitch)
         for i, xx in enumerate((x0, x1)):
             if ends[i]:
                 c = (xx + (WT / 2 if i == 0 else -WT / 2), ym)
-                _gable_wall(c, (0, 1), half, plate, pitch, base, cut if cut and cut[0] == i else None)
+                _gable_wall(c, (0, 1), half, wall_plate, pitch, base, cut if cut and cut[0] == i else None)
     return plate + half * pitch
 
 
 def _gable_wall(c, u, half, plate, pitch, base, cut):
     def ztop(s):
-        return plate - 0.09 + (half - abs(s)) * pitch
-    lim = half - max(0.0, (base - (plate - 0.09)) / pitch) - 0.001
+        return plate + 0.12 + (half - abs(s)) * pitch
+    lim = half - max(0.0, (base - (plate + 0.12)) / pitch) - 0.001
     if cut is None:
         wall_piece(c, u, -lim, lim, base, ztop)
     else:
@@ -111,28 +114,28 @@ PL1 = 4.27                        # main block plate (14 ft)
 yc1 = (Y_FRONT + Y_FAMB) / 2
 RIDGE1 = gable(X_WING_L, Y_FRONT, GW + 0.164, Y_FAMB, "x", PL1,
                cut=(1, K["YA0"] - yc1, K["YA1"] - yc1, K["ZA"] + 0.05))
-band(X_WING_L, Y_FRONT, GW, Y_FRONT + WT, CEIL, PL1 - 0.09)            # front band above the porch roof
-band(X_WING_L, Y_FAMB - WT, X_DIN, Y_FAMB, CEIL, PL1 - 0.09)           # back band above the porch roof
+band(X_WING_L, Y_FRONT, GW, Y_FRONT + WT, CEIL, PL1 + 0.1)            # front band above the porch roof
+band(X_WING_L, Y_FAMB - WT, X_DIN, Y_FAMB, CEIL, PL1 + 0.1)           # back band above the porch roof
 # G2 bedroom wing, ridge N-S, and the bedroom-3 brick gable in front of it
-gable(XL, Y_JJ, X_WING_L, Y_GAME, "y", CEIL)
-gable(PX(285, 0)[0], Y_B3, X_WING_L, 3.6, "y", CEIL, ends=(True, False))
+gable(XL, Y_JJ, X_WING_L, Y_GAME, "y", CEIL, over=(0.45, 0.0))
+gable(PX(285, 0)[0], Y_B3, X_WING_L, Y_JJ, "y", CEIL, ends=(True, False))
 # G3 garage / service wing, ridge N-S, with cut-outs for the stair alcove and the bonus dormer
-gable(GW, Y_JJ, XR, Y_DIN, "y", CEIL,
-      holes_a=[rect_cw(GW - 0.6, K["YA0"] - 0.14, K["XA"] + 0.05, K["YA1"] + 0.14)],
+gable(GW, Y_JJ, XR, Y_DIN, "y", CEIL, over=(0.0, 0.45),
+      holes_a=[rect_cw(GW + 0.17, K["YA0"] - 0.14, K["XA"] + 0.05, K["YA1"] + 0.14)],
       holes_b=[rect_cw(K["XDS"] - 0.05, K["YD0"] - 0.14, XR + 0.6, K["YD1"] + 0.14)])
-gable(GW, Y_B3, PX(1811, 0)[0], 3.4, "y", CEIL, ends=(True, False))      # garage front brick gable
+gable(GW, Y_B3, PX(1811, 0)[0], Y_JJ, "y", CEIL, ends=(True, False))      # garage front brick gable
 # G4 primary suite
-gable(X_PS0, Y_DIN - 0.4, X_PS1, Y_PSB, "y", CEIL, ends=(False, True))
+gable(X_PS0, Y_DIN - 0.4, X_PS1, Y_PSB, "y", CEIL, over=(0.0, 0.45), ends=(False, True))
 # G5 dining / kitchen wing
-gable(X_DIN, 12.4, X_HALL, Y_DIN, "y", CEIL, ends=(False, True))
+gable(X_DIN, 12.4, X_HALL, Y_DIN, "y", CEIL, over=(0.0, 0.0), ends=(False, True))
 # G6 outdoor living, low gable
 gable(PX(1035, 0)[0] - 0.15, Y_DIN, X_PS0, PX(0, 70)[1] + 0.15, "x", CEIL + 0.25, pitch=5.0 / 12.0,
       ends=(True, False), base=CEIL + 0.25)
 # portico cross gable over the foyer vault
 PLP = 4.75
 gable(X_PORT0, 0.0, X_PORT1, 6.8, "y", PLP, ends=(True, False))
-band(X_PORT0, 0.0, X_PORT0 + WT, Y_FRONT, CEIL, PLP - 0.09)
-band(X_PORT1 - WT, 0.0, X_PORT1, Y_FRONT, CEIL, PLP - 0.09)
+band(X_PORT0, 0.0, X_PORT0 + WT, Y_FRONT, CEIL, PLP + 0.1)
+band(X_PORT1 - WT, 0.0, X_PORT1, Y_FRONT, CEIL, PLP + 0.1)
 # stair connector cross gable on the garage roof
 PLC = 5.5
 gable(GW + 0.16, K["YA0"] - 0.2, K["XA"] + 1.1, K["YA1"] + 0.2, "x", PLC, over=0.2, ends=(False, False))
@@ -143,7 +146,7 @@ for yy in (K["YA0"] - 0.2 + WT / 2, K["YA1"] + 0.2 - WT / 2):
 # front dormers on the main roof
 for cx in (13.18 - 3.6, 13.18 + 3.6):
     yf = 3.45
-    zroof = PL1 + (yf - Y_FRONT) * PITCH
+    zroof = PL1 + RT + (yf - Y_FRONT) * PITCH
     pld = zroof + 1.25
     gable(cx - 0.85, yf, cx + 0.85, yf + 2.6, "y", pld, over=0.2, rake=0.25, ends=(True, False), base=zroof - 0.25)
     for sx in (cx - 0.85 + WT / 2, cx + 0.85 - WT / 2):                 # cheeks
@@ -201,8 +204,8 @@ BP = [(5.277, Y_FAMB), (12.26, Y_FAMB), (X_DIN, 17.35), (X_DIN, Y_DIN), (X_PS0, 
 add_prism(porch, BP, [], -0.30, 0.0)
 add_prism(pceil, BP, [], CEIL, CEIL + 0.02)
 # lean-to roof behind the main block and over the kitchen triangle
-slab(roof, [(5.0, Y_FAMB), (12.3, Y_FAMB), (X_DIN + 0.1, 17.3), (X_DIN + 0.1, 17.6), (12.6, 17.6), (11.3, 16.95), (5.0, 16.95)],
-     [], lambda x, y: 4.18 - (y - Y_FAMB) * 0.36, 0.18)
+slab(roof, [(5.0, Y_FAMB), (X_DIN + 0.1, Y_FAMB), (X_DIN + 0.1, 17.6), (12.6, 17.6), (11.3, 16.95), (5.0, 16.95)],
+     [], lambda x, y: 4.18 - (y - Y_FAMB) * 0.22, 0.18)
 slab(roof, [(11.0, 16.6), (X_DIN + 0.1, 16.6), (X_DIN + 0.1, Y_DIN + 0.2), (12.8, Y_DIN + 0.2), (12.8, 18.6)],
      [], lambda x, y: CEIL + 0.42 - (X_DIN - x) * 0.05, 0.18)
 POSTS = [(8.2, 16.50), (11.167, 16.525), (13.098, 18.484), (13.098, 22.1), (13.098, 25.72), (16.9, 25.80)]
@@ -214,6 +217,8 @@ for a, b in BEAMS:
     L = math.hypot(b[0] - a[0], b[1] - a[1])
     add_box(timber, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), ((b[0] - a[0]) / L, (b[1] - a[1]) / L), L / 2 + 0.1, 0.1,
             CEIL - 0.28, CEIL)
+    add_box(timber, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), ((b[0] - a[0]) / L, (b[1] - a[1]) / L), L / 2 + 0.1, 0.03,
+            CEIL, CEIL + 0.34)                                               # fascia up to the roof
 
 # ------------------------------------------------------------------ chimneys
 chim = bmesh.new()

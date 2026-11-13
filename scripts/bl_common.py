@@ -192,3 +192,219 @@ def room_bounds(name):
 
 def save():
     bpy.ops.wm.save_mainfile()
+
+
+def pip(pt, ring):
+    """Point-in-polygon (ring of (x, y))."""
+    x, y = pt[0], pt[1]
+    inside = False
+    n = len(ring)
+    for i in range(n):
+        x0, y0 = ring[i]
+        x1, y1 = ring[(i + 1) % n]
+        if (y0 > y) != (y1 > y) and x < (x1 - x0) * (y - y0) / (y1 - y0) + x0:
+            inside = not inside
+    return inside
+
+
+def room_at(pt):
+    for r in S["rooms"]:
+        if pip(pt, r["outer"]):
+            return r
+    return None
+
+
+def in_footprint(pt):
+    return any(pip(pt, f["outer"]) for f in S["footprint"])
+
+
+def uv_box(ob, layer="UVMap"):
+    """World-scale box UVs in metres: u along the horizontal tangent, v up the face."""
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    uv = bm.loops.layers.uv.get(layer) or bm.loops.layers.uv.new(layer)
+    Z = Vector((0, 0, 1))
+    for f in bm.faces:
+        n = f.normal
+        if abs(n.z) > 0.999 or n.length < 1e-6:
+            for l in f.loops:
+                l[uv].uv = (l.vert.co.x, l.vert.co.y)
+        else:
+            t = Z.cross(n).normalized()
+            b = n.cross(t).normalized()
+            for l in f.loops:
+                l[uv].uv = (l.vert.co.dot(t), l.vert.co.dot(b))
+    bm.to_mesh(me)
+    bm.free()
+
+
+def externalize_images():
+    """Move packed Poly Haven textures to project-files/textures and reference them relatively."""
+    tex = os.path.join(ROOT, "project-files", "textures")
+    os.makedirs(tex, exist_ok=True)
+    n = 0
+    for img in bpy.data.images:
+        if img.packed_file is None or img.source != "FILE":
+            continue
+        base = os.path.basename(img.filepath) or (img.name + ".png")
+        dst = os.path.join(tex, base)
+        with open(dst, "wb") as fh:
+            fh.write(img.packed_file.data)
+        img.unpack(method="REMOVE")
+        img.filepath = "//textures/" + base
+        img.reload()
+        n += 1
+    return n
+
+
+def set_in(node, name, value):
+    """Set a node input by name, tolerating disabled / renamed sockets."""
+    for s in node.inputs:
+        if s.name == name:
+            try:
+                s.default_value = value
+            except Exception:
+                pass
+            return True
+    return False
+
+
+def assign(ob, mat):
+    ob.data.materials.clear()
+    ob.data.materials.append(mat)
+
+
+MATN = {
+    "white": "MAT-paint_white", "charcoal": "MAT-paint_charcoal", "ceiling": "MAT-paint_ceiling",
+    "trim": "MAT-trim_white", "siding": "MAT-siding_dark", "black": "MAT-metal_black",
+    "hw": "MAT-hardware_black", "quartz": "MAT-quartz", "steel": "MAT-stainless", "brass": "MAT-brass",
+    "porcelain": "MAT-porcelain", "mirror": "MAT-mirror", "glassdark": "MAT-glass_dark", "glass": "MAT-glass",
+    "oak": "MAT-oak", "timber": "MAT-timber", "limestone": "MAT-limestone", "brick": "MAT-brick",
+    "tile": "MAT-tile_marble", "floor_oak": "MAT-floor_oak", "concrete": "MAT-concrete",
+}
+
+
+def MAT(key):
+    return bpy.data.materials[MATN.get(key, key)]
+
+
+class Frame:
+    """2-D working frame: s along u, d along the left normal of u, z up."""
+
+    def __init__(self, origin, u):
+        L = math.hypot(u[0], u[1])
+        self.o = Vector((origin[0], origin[1]))
+        self.u = Vector((u[0] / L, u[1] / L))
+        self.n = Vector((-self.u.y, self.u.x))
+
+    def p(self, s, d, z=0.0):
+        v = self.o + self.u * s + self.n * d
+        return (v.x, v.y, z)
+
+    def xy(self, s, d):
+        v = self.o + self.u * s + self.n * d
+        return (v.x, v.y)
+
+
+WORLD = Frame((0, 0), (1, 0))      # s = x, d = y
+
+
+class Builder:
+    """Collects boxes per material key, then emits one object per key."""
+
+    def __init__(self, name, col):
+        self.name, self.col, self.bms = name, col, {}
+
+    def bm(self, key):
+        if key not in self.bms:
+            self.bms[key] = bmesh.new()
+        return self.bms[key]
+
+    def box(self, key, F, s0, s1, d0, d1, z0, z1):
+        b = self.bm(key)
+        s0, s1 = min(s0, s1), max(s0, s1)
+        d0, d1 = min(d0, d1), max(d0, d1)
+        vs = [b.verts.new(F.p(s, d, z)) for z in (z0, z1) for (s, d) in ((s0, d0), (s1, d0), (s1, d1), (s0, d1))]
+        for idx in ((0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)):
+            b.faces.new([vs[i] for i in idx])
+
+    def hexa(self, key, pts8):
+        """Arbitrary 8-corner solid: 4 bottom points then 4 top points (same winding)."""
+        b = self.bm(key)
+        vs = [b.verts.new(p) for p in pts8]
+        for idx in ((0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)):
+            b.faces.new([vs[i] for i in idx])
+
+    def cyl(self, key, center, r, z0, z1, seg=16, r2=None):
+        b = self.bm(key)
+        m = bmesh.ops.create_cone(b, cap_ends=True, segments=seg, radius1=r, radius2=r if r2 is None else r2,
+                                  depth=z1 - z0)
+        for v in m["verts"]:
+            v.co.x += center[0]
+            v.co.y += center[1]
+            v.co.z += (z0 + z1) / 2
+
+    def rod(self, key, a, b_, r, seg=10):
+        """Cylinder between two 3-D points."""
+        b = self.bm(key)
+        a, b_ = Vector(a), Vector(b_)
+        d = b_ - a
+        m = bmesh.ops.create_cone(b, cap_ends=True, segments=seg, radius1=r, radius2=r, depth=d.length)
+        rot = d.to_track_quat("Z", "Y").to_matrix()
+        mid = (a + b_) / 2
+        for v in m["verts"]:
+            v.co = rot @ v.co + mid
+
+    def ellipsoid(self, key, center, rx, ry, rz, seg=20):
+        b = self.bm(key)
+        m = bmesh.ops.create_uvsphere(b, u_segments=seg, v_segments=seg // 2, radius=1.0)
+        for v in m["verts"]:
+            v.co = Vector((v.co.x * rx + center[0], v.co.y * ry + center[1], v.co.z * rz + center[2]))
+
+    def finish(self, smooth_keys=()):
+        out = []
+        for key, b in self.bms.items():
+            bmesh.ops.recalc_face_normals(b, faces=b.faces)
+            ob = new_obj(f"GEO-{self.name}_{key}", b, self.col, smooth=key in smooth_keys)
+            assign(ob, MAT(key))
+            uv_box(ob)
+            out.append(ob)
+        self.bms = {}
+        return out
+
+
+def cab_doors(B, key, F, s0, s1, d_face, z0, z1, n, pulls="v", gap=0.004):
+    """Shaker-style door or drawer fronts across s0..s1 on the plane d = d_face (facing +d)."""
+    w = (s1 - s0) / n
+    for i in range(n):
+        a, b = s0 + i * w + gap / 2, s0 + (i + 1) * w - gap / 2
+        B.box(key, F, a, b, d_face, d_face + 0.016, z0 + gap / 2, z1 - gap / 2)
+        fr = 0.055
+        for (sa, sb, za, zb) in ((a, a + fr, z0, z1), (b - fr, b, z0, z1), (a + fr, b - fr, z0, z0 + fr),
+                                 (a + fr, b - fr, z1 - fr, z1)):
+            B.box(key, F, sa, sb, d_face + 0.016, d_face + 0.021, za + gap / 2, zb - gap / 2)
+        if pulls == "v":
+            sx = b - 0.035 if i % 2 == 0 else a + 0.035
+            zc = z0 + 0.22 if z0 > 1.2 else z1 - 0.22
+            B.box("hw", F, sx - 0.006, sx + 0.006, d_face + 0.021, d_face + 0.05, zc - 0.07, zc + 0.07)
+        elif pulls == "h":
+            B.box("hw", F, (a + b) / 2 - 0.08, (a + b) / 2 + 0.08, d_face + 0.021, d_face + 0.05,
+                  (z0 + z1) / 2 - 0.006, (z0 + z1) / 2 + 0.006)
+
+
+def base_cabinet(B, F, s0, s1, d_wall, z_top=0.885, depth=0.6, key="trim", n=None, drawers=False, top="quartz",
+                 overhang=0.02, splash=0.0):
+    """Base cabinet run against the plane d = d_wall, extending toward +d."""
+    n = n or max(1, round((s1 - s0) / 0.5))
+    B.box("hw", F, s0, s1, d_wall + 0.02, d_wall + depth - 0.07, 0.0, 0.10)                  # toe kick
+    B.box(key, F, s0, s1, d_wall, d_wall + depth - 0.016, 0.10, z_top)
+    if drawers:
+        cab_doors(B, key, F, s0, s1, d_wall + depth - 0.016, 0.10, z_top - 0.2, n, pulls="h")
+        cab_doors(B, key, F, s0, s1, d_wall + depth - 0.016, z_top - 0.2, z_top, n, pulls="h")
+    else:
+        cab_doors(B, key, F, s0, s1, d_wall + depth - 0.016, 0.10, z_top, n)
+    if top:
+        B.box(top, F, s0 - overhang, s1 + overhang, d_wall, d_wall + depth + overhang + 0.02, z_top, z_top + 0.03)
+    if splash > 0:
+        B.box(top or "quartz", F, s0, s1, d_wall, d_wall + 0.015, z_top + 0.03, z_top + 0.03 + splash)
