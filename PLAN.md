@@ -62,42 +62,42 @@ Hard rule from the brief: **no furnishing, texturing, lighting or rendering unti
 - Save, commit, push, update HANDOFF.md
 
 ### Stage 3 — Architectural materials and fixed millwork
-- [ ] Poly Haven PBR sets at 2k (4k for hero floors): oak plank floor, painted walls, tile in baths and utility, limestone, brick, board-and-batten, shingles, standing-seam metal, concrete
-- [ ] UVs at real-world scale so nothing stretches or tiles visibly
-- [ ] Baseboards, crown, door and window casings, panel moulding in primary suite and office
-- [ ] Kitchen: perimeter cabinets, island, hood, range, fridge, sink, quartz tops, ceiling beams; pantry and coffee bar shelving
-- [ ] Baths: vanities, mirrors, tub, showers, toilets; utility counters, washer and dryer; closet systems; mudroom bench and hooks; fireplace surrounds, mantels, floating shelves
+- [x] Poly Haven PBR sets at 2k (4k for hero floors): oak plank floor, painted walls, tile in baths and utility, limestone, brick, board-and-batten, shingles, standing-seam metal, concrete
+- [x] UVs at real-world scale so nothing stretches or tiles visibly
+- [x] Baseboards, crown, door and window casings, panel moulding in primary suite and office
+- [x] Kitchen: perimeter cabinets, island, hood, range, fridge, sink, quartz tops, ceiling beams; pantry and coffee bar shelving
+- [x] Baths: vanities, mirrors, tub, showers, toilets; utility counters, washer and dryer; closet systems; mudroom bench and hooks; fireplace surrounds, mantels, floating shelves
 
-**Gate B** — material-preview views of every room and all four exterior sides: no missing or pink materials, no stretched textures, grain and plank direction sensible. Save, commit, push.
+**Gate B (passed)** — material-preview views of every room and all four exterior sides: no missing or pink materials, no stretched textures, grain and plank direction sensible. Save, commit, push.
 
 ### Stage 4 — Furnishing
-- [ ] Asset manifest (`scripts/furnish_manifest.json`): Poly Haven id, target size, room, transform; every download recorded
-- [ ] Room by room in priority order: family room, kitchen, dining, foyer, primary suite, primary bath, office, bedrooms 2–4, game room, bonus room, baths, utility, mudroom, closets, outdoor living, porches, garage
-- [ ] Rugs, curtains, bedding, art, books, plants and lamps so no room reads as staged-empty
+- [x] Asset manifest (`scripts/furnish_manifest.json`): Poly Haven id, target size, room, transform; every download recorded
+- [x] Room by room in priority order: family room, kitchen, dining, foyer, primary suite, primary bath, office, bedrooms 2–4, game room, bonus room, baths, utility, mudroom, closets, outdoor living, porches, garage
+- [x] Rugs, curtains, bedding, art, books, plants and lamps so no room reads as staged-empty
 
-**Gate C** — per-room checks: nothing floating or intersecting, clearances of at least 0.9 m on walk paths, furniture at real-world scale against a 1.8 m reference. Save, commit, push.
+**Gate C (passed)** — per-room checks: nothing floating or intersecting, clearances of at least 0.9 m on walk paths, furniture at real-world scale against a 1.8 m reference. Save, commit, push.
 
 ### Stage 5 — Lighting
-- [ ] Sky: Nishita sun at low elevation (about 6–10°) from the back of the house, or a Poly Haven golden-hour HDRI if it reads better in tests
-- [ ] Practicals: recessed cans, lamps, chandeliers, pendants, under-cabinet strips, sconces, all warm (2700–3000 K)
-- [ ] AgX view transform, exposure balanced so windows hold detail and interiors are not flat
+- [x] Sky: Nishita sun at low elevation (about 6–10°) from the back of the house, or a Poly Haven golden-hour HDRI if it reads better in tests
+- [x] Practicals: recessed cans, lamps, chandeliers, pendants, under-cabinet strips, sconces, all warm (2700–3000 K)
+- [x] AgX view transform, exposure balanced so windows hold detail and interiors are not flat
 
-**Gate D** — 960×540 Cycles previews of the eight key rooms: readable sun patches, no blown-out or black rooms, no light leaks at wall and ceiling joints.
+**Gate D (passed)** — 960×540 Cycles previews of the eight key rooms: readable sun patches, no blown-out or black rooms, no light leaks at wall and ceiling joints.
 
 ### Stage 6 — Camera rig
-- [ ] One named still camera per room (18–24 mm, 1.5 m height, verticals upright) plus front, back and twilight exterior heroes
-- [ ] Walkthrough: camera on a path from the front walk through foyer, family room, kitchen, dining and primary suite, with timeline markers binding cameras
+- [x] One named still camera per room (18–24 mm, 1.5 m height, verticals upright) plus front, back and twilight exterior heroes
+- [x] Walkthrough: camera on a path from the front walk through foyer, family room, kitchen, dining and primary suite, with timeline markers binding cameras
 
 ### Stage 7 — QA renders and fixes
-- [ ] 1920×1080 finals of key views: exterior front, foyer, family room, kitchen, dining, primary suite, primary bath, office
-- [ ] Previews of every remaining camera
-- [ ] Up to four fix passes; anything still wrong is listed in HANDOFF.md
+- [x] 1920×1080 finals of key views: exterior front, foyer, family room, kitchen, dining, primary suite, primary bath, office
+- [x] Previews of every remaining camera
+- [x] Up to four fix passes; anything still wrong is listed in HANDOFF.md
 - Long renders run in a background Blender process so the live session stays responsive
 
 ### Stage 8 — Export and delivery
-- [ ] GLB exports per collection (structure, millwork, furniture per zone) in `project-files/export/`, textures alongside
-- [ ] `UNREAL_EXPORT.md`: scale, axis, collision, lightmap UV and material notes
-- [ ] Final save, HANDOFF.md with what was built, what was checked and what remains imperfect; commit and push
+- [x] GLB exports per collection (structure, millwork, furniture per zone) in `project-files/export/`, textures alongside
+- [x] `UNREAL_EXPORT.md`: scale, axis, collision, lightmap UV and material notes
+- [x] Final save, HANDOFF.md with what was built, what was checked and what remains imperfect; commit and push
 
 ## 4. File layout
 

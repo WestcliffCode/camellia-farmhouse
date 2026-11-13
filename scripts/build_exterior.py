@@ -124,7 +124,7 @@ gable(PX(285, 0)[0], Y_B3, X_WING_L, Y_JJ, "y", CEIL, ends=(True, False))
 Y_BUMP = PX(0, 1001)[1] - 0.1          # the bath / closet bump-out starts here; no east eave beyond it
 gable(GW, Y_JJ, XR, Y_BUMP, "y", CEIL, over=(0.0, 0.45), ends=(True, False),
       holes_a=[rect_cw(GW + 0.17, K["YA0"] - 0.14, K["XA"] + 0.05, K["YA1"] + 0.14)],
-      holes_b=[rect_cw(K["XDS"] - 0.05, K["YD0"] - 0.14, XR + 0.6, K["YD1"] + 0.14)])
+      holes_b=[rect_cw(K["XDS"] - 0.05, K["YD0"] - 0.14, K["XD"] + 0.14, K["YD1"] + 0.14)])
 gable(GW, Y_BUMP, XR, Y_DIN, "y", CEIL, over=(0.0, 0.0), ends=(False, True))
 gable(GW, Y_B3, PX(1811, 0)[0], Y_JJ, "y", CEIL, ends=(True, False))      # garage front brick gable
 # G4 primary suite
@@ -140,8 +140,8 @@ gable(X_PORT0, 0.0, X_PORT1, 6.8, "y", PLP, ends=(True, False))
 band(X_PORT0, 0.0, X_PORT0 + WT, Y_FRONT, CEIL, PLP + 0.1)
 band(X_PORT1 - WT, 0.0, X_PORT1, Y_FRONT, CEIL, PLP + 0.1)
 # stair connector cross gable on the garage roof
-PLC = 5.5
-gable(GW + 0.16, K["YA0"] - 0.2, K["XA"] + 1.1, K["YA1"] + 0.2, "x", PLC, over=0.2, ends=(False, False))
+PLC = 5.6
+gable(GW + 0.16, K["YA0"] - 0.2, K["XA"] + 0.3, K["YA1"] + 0.2, "x", PLC, over=0.2, ends=(False, False))
 for yy in (K["YA0"] - 0.2 + WT / 2, K["YA1"] + 0.2 - WT / 2):
     xe = GW + (PLC - CEIL) / PITCH
     add_profile(gwall, (GW, yy), (1, 0), WT / 2, [(0.16, CEIL + 0.14), (xe - GW, PLC), (0.16, PLC)])

@@ -28,7 +28,7 @@ STILLS = [
     ("bedroom_4", (0.55, 8.1, 1.5), (2.8, 5.2), 16, -0.05),
     ("game_room", (1.6, 10.85, 1.5), (3.2, 15.6), 15, 0.0),
     ("bonus_room", (22.5, 10.7, ZB + 1.45), (22.6, 3.0), 16, -0.05),
-    ("hall_bath", (6.35, 10.9, 1.5), (5.3, 9.1), 15, -0.05),
+    ("hall_bath", (6.6, 10.75, 1.5), (5.2, 9.6), 14, -0.05),
     ("jj_bath", (1.6, 4.15, 1.5), (0.8, 1.6), 14, -0.05),
     ("mudroom", (21.25, 12.1, 1.5), (22.4, 16.2), 15, -0.04),
     ("utility", (23.05, 13.75, 1.5), (25.5, 11.6), 15, -0.05),
@@ -101,11 +101,11 @@ for ob in (walk, aim):
             for kp in fc.keyframe_points:
                 kp.interpolation = "LINEAR"
 
-# timeline markers bind the still cameras to frames 1..N (frame N+1 onward: walkthrough)
+# timeline markers: frames 1-1080 = walkthrough camera, frames 2001+ = one still camera per frame
 for m in list(scene.timeline_markers):
     scene.timeline_markers.remove(m)
 for i, ob in enumerate(cams):
-    mk = scene.timeline_markers.new(ob.name, frame=1001 + i)
+    mk = scene.timeline_markers.new(ob.name, frame=2001 + i)      # stills live after the walkthrough range
     mk.camera = ob
 mk = scene.timeline_markers.new("walkthrough", frame=1)
 mk.camera = walk

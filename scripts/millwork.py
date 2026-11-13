@@ -234,4 +234,31 @@ for px in (650, 887, 1193, 1427):
             continue
         beam((x, 0.75, 2.15), (x + sgn * 0.6, 0.75, CEIL - 0.3), 0.11)
 B.finish()
-print("trim boxes", nb, nc, "millwork objects", len(col.all_objects))
+# ------------------------------------------------------------------ interior casings for windows, sliders and exterior doors
+B = Builder("casing", col)
+ncase = 0
+for o in S["openings"]:
+    k = o["type"]
+    if not (k.startswith("window") or k in ("slider", "extdoor")):
+        continue
+    F = Frame(o["c"], o["u"])
+    inward = Vector((-o["n_out"][0], -o["n_out"][1]))
+    sgn = 1.0 if F.n.dot(inward) > 0 else -1.0
+    q = Vector(o["c"]) + inward * (o["t"] / 2 + 0.25)
+    r = room_at((q.x, q.y))
+    if r is None or r["name"] in ("garage",):
+        continue
+    key = "charcoal" if r["name"] in CHARCOAL else "trim"
+    w, d0 = o["w"], sgn * o["t"] / 2
+    d1 = d0 + sgn * 0.019
+    z0, z1 = o["sill"], o["head"]
+    cw = 0.09
+    zb = z0 - (cw if z0 > 0.05 else 0.0)
+    B.box(key, F, -w / 2 - cw, -w / 2, d0, d1, max(zb, 0.012), z1 + cw)
+    B.box(key, F, w / 2, w / 2 + cw, d0, d1, max(zb, 0.012), z1 + cw)
+    B.box(key, F, -w / 2, w / 2, d0, d1, z1, z1 + cw)
+    if z0 > 0.05:
+        B.box(key, F, -w / 2, w / 2, d0, d1, z0 - cw, z0 - 0.03)
+    ncase += 1
+B.finish()
+print("trim boxes", nb, nc, "casings", ncase, "millwork objects", len(col.all_objects))
