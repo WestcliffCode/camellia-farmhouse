@@ -141,6 +141,55 @@ band(SP_X1 - WT, Y_B0, SP_X1, Y_DIN, CEIL, SP_PL)                            # b
 # G6 outdoor living, low gable
 gable(PX(1035, 0)[0] - 0.15, Y_DIN, X_PS0, PX(0, 70)[1] + 0.15, "x", CEIL + 0.25, pitch=5.0 / 12.0,
       ends=(True, False), base=CEIL + 0.25)
+# Upper wing roofs. The front elevation shows a flat-topped roof block about 8.5 m high behind each trussed wing
+# gable, with a vertical outer edge (a gable end facing sideways), and the side elevations show those gable ends
+# nested under the main gable. They are east-west ridged roofs sitting on the wing roofs; each slope is clipped to
+# the valley where it meets the lower north-south wing roof, so nothing drops below that roof or into a room.
+EW_P, EW_Y0, EW_Y1 = 0.77, 3.3, Y_GAME
+EW_YM, EW_HALF, TOP0 = (EW_Y0 + EW_Y1) / 2, (EW_Y1 - EW_Y0) / 2, CEIL + RT
+
+
+def _wing_h(x, xa, xb):
+    return TOP0 + min(x - xa, xb - x) * PITCH
+
+
+def _ys(h):
+    return EW_Y0 + (h - TOP0) / EW_P
+
+
+def _yn(h):
+    return EW_Y1 - (h - TOP0) / EW_P
+
+
+def _zs(x, y):
+    return TOP0 + (y - EW_Y0) * EW_P
+
+
+def _zn(x, y):
+    return TOP0 + (EW_Y1 - y) * EW_P
+
+
+# left wing (over bedrooms and game room): gable end faces west at x = 2.0
+xa, xb, xg = XL, X_WING_L, 2.0
+xr = (xa + xb) / 2
+hg, hr = _wing_h(xg, xa, xb), _wing_h(xr, xa, xb)
+slab(roof, [(xg, _ys(hg)), (xr, _ys(hr)), (xb, EW_Y0), (xb, EW_YM), (xg, EW_YM)], [], _zs)
+slab(roof, [(xg, EW_YM), (xb, EW_YM), (xb, EW_Y1), (xr, _yn(hr)), (xg, _yn(hg))], [], _zn)
+_gable_wall((xg + WT / 2, EW_YM), (0, 1), EW_HALF, CEIL, EW_P, hg - 0.05, None)
+# right wing (over the garage rear, west of the bonus dormer): gable end faces east at x = 23.0
+xa, xb, xw, xg = GW, XR, GW + 0.164, 23.0
+xr = (xa + xb) / 2
+hw, hr, hg = _wing_h(xw, xa, xb), _wing_h(xr, xa, xb), _wing_h(xg, xa, xb)
+slab(roof, [(xw, _ys(hw)), (xr, _ys(hr)), (xg, _ys(hg)), (xg, EW_YM), (xw, EW_YM)], [], _zs)
+slab(roof, [(xw, EW_YM), (xg, EW_YM), (xg, 13.3), (xw, 13.3)], [], _zn)
+_gable_wall((xg - WT / 2, EW_YM), (0, 1), EW_HALF, CEIL, EW_P, hg - 0.05, None)
+# tie the rear spine into this ridge
+slab(roof, [(xw, EW_YM), (20.24, EW_YM), (20.24, SP_Y0 + 0.05), (xw, SP_Y0 + 0.05)], [],
+     lambda x, y: SP_PL + RT + (x - SP_X0) * SP_PITCH)
+slab(roof, [(20.24, EW_YM), (xg, EW_YM), (xg, SP_Y0 + 0.05), (20.24, SP_Y0 + 0.05)], [],
+     lambda x, y: SP_PL + RT + (SP_X1 - x) * SP_PITCH)
+UPPER_RIDGE = TOP0 + EW_HALF * EW_P
+
 # portico cross gable over the foyer vault
 PLP = 4.75
 gable(X_PORT0, 0.0, X_PORT1, 6.8, "y", PLP, ends=(True, False))
@@ -237,4 +286,4 @@ for nm, b in (("GEO-roof_shingle", roof), ("GEO-roof_metal", metal), ("GEO-upper
               ("GEO-chimneys", chim)):
     ob = new_obj(nm, b, col)
     fix_normals(ob)
-print("ridge main %.2f spine %.2f" % (RIDGE1, SPINE_RIDGE), [(o.name, len(o.data.polygons)) for o in col.objects])
+print("ridge main %.2f spine %.2f upper wings %.2f" % (RIDGE1, SPINE_RIDGE, UPPER_RIDGE), [(o.name, len(o.data.polygons)) for o in col.objects])

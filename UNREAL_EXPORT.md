@@ -8,7 +8,7 @@
 | --- | --- |
 | `camellia_structure.glb` | walls, slab, ceilings, floors, stair, bonus-room shell, windows, doors, cladding battens |
 | `camellia_millwork.glb` | base and crown, casings, panel moulding, kitchen, coffee bar, pantry shelving, fireplaces, exterior timber |
-| `camellia_exterior.glb` | roofs, gable walls, dormers, porches, chimneys, ground, paving |
+| `camellia_exterior.glb` | all roofs (main, wing, upper wing, rear spine, dormers, porches), gable walls, chimneys, porch structure, ground, paving |
 | `camellia_furn_<room>.glb` (18 files) | furniture and decor per room; Poly Haven instances are realised into meshes |
 | `camellia_cameras_lights.glb` | 29 still cameras, 4 orthographic elevation cameras, the walkthrough camera with its move baked to keyframes, 180 lights |
 | `camellia_landscape.glb` | the 14 trees (one Poly Haven tree mesh, instanced) |
