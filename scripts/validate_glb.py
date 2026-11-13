@@ -1,5 +1,6 @@
 """Re-import exported GLBs into an empty scene and report what survived:
-  Blender -b --factory-startup -P scripts/validate_glb.py -- file1.glb file2.glb ..."""
+  Blender -b --factory-startup -P scripts/validate_glb.py -- project-files/export/*.glb > log
+  grep "^VALID " log | sed 's/^VALID //' > output/glb_validation.txt"""
 import sys, os, bpy
 files = sys.argv[sys.argv.index("--") + 1:]
 for f in files:

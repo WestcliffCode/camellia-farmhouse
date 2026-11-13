@@ -11,7 +11,7 @@ WARM = (1.0, 0.74, 0.50)
 CAN_GAIN = 3.0                       # a spot is a masked point light: ~3x the watts of the area disc it replaces
 CAN_CONE = (math.radians(125), 0.6)
 SUN_ELEV = math.radians(6.0)        # golden hour sliding into dusk
-SUN_DIR_XY = Vector((-0.34, 1.0)).normalized()      # where the sun sits, seen from the house (behind it, a little left)
+SUN_DIR_XY = Vector((-0.532, 1.0)).normalized()     # where the sun sits, seen from the house: behind it, 28 degrees to the left (scripts/sun_coverage.py)
 
 
 def enum_ids(rna_type, prop):
@@ -252,8 +252,8 @@ for (x, y) in ((9.5, 1.6), (16.9, 1.6), (9.0, 15.2), (7.0, 15.2), (14.2, 19.0), 
 # bonus room: cans along the flat collar, plus the dormer
 ZC = K["ZF"] + 2.74 - 0.012
 for yy in (2.2, 4.2, 6.2, 8.2, 10.2):
-    add_light("LGT-can_bonus", "SPOT", (22.52, yy, ZC), 16 * CAN_GAIN, size=0.05, spot=CAN_CONE)
-add_light("LGT-can_bonus_dormer", "SPOT", (25.2, 6.15, K["ZD"] - 0.012), 14 * CAN_GAIN, size=0.05, spot=CAN_CONE)
+    add_light("LGT-can_bonus", "SPOT", (22.52, yy, ZC), 22 * CAN_GAIN, size=0.05, spot=CAN_CONE)
+add_light("LGT-can_bonus_dormer", "SPOT", (25.2, 6.15, K["ZD"] - 0.012), 19 * CAN_GAIN, size=0.05, spot=CAN_CONE)
 add_light("LGT-can_stair", "SPOT", (19.8, (K["YA0"] + K["YA1"]) / 2, K["ZA"] - 0.012), 12 * CAN_GAIN, size=0.05, spot=CAN_CONE)
 
 print("cans", ncan, "lamp lights", len(LAMPS), "total lights", len([o for o in col.objects if o.type == "LIGHT"]))

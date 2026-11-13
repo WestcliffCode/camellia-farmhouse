@@ -7,7 +7,8 @@ PH_ASSETS = ["ceiling_fan", "modern_arm_chair_01", "side_table_01", "modern_coff
              "dining_chair_02", "mid_century_lounge_chair", "steel_frame_shelves_01", "steel_frame_shelves_03",
              "drawer_cabinet", "modern_wooden_cabinet", "potted_plant_01", "potted_plant_02", "potted_plant_04",
              "ceramic_vase_01", "ceramic_vase_03", "wooden_bowl_01", "decorative_book_set_01",
-             "modern_ceiling_lamp_01"]
+             "modern_ceiling_lamp_01", "hanging_picture_frame_01", "standing_picture_frame_01", "ceramic_vase_02",
+             "ceramic_vase_04", "Ottoman_01", "brass_pot_01", "brass_pot_02"]
 LAMPS = []          # (x, y, z, kind, room) for the lighting stage
 
 
@@ -399,6 +400,13 @@ def art(B, x, y, facing, w=1.0, h=1.2, z=1.0, key="art_a", frame="hw"):
     F = facing_frame(x, y, facing)
     B.box(frame, F, -w / 2, w / 2, 0.0, 0.03, z, z + h)
     B.box(key, F, -w / 2 + 0.03, w / 2 - 0.03, 0.03, 0.034, z + 0.03, z + h - 0.03)
+
+
+def hang(asset, x, y, facing, z, col):
+    """Wall-mount a Poly Haven piece: snapped to the built wall face, 1 cm proud of it."""
+    F = facing_frame(x, y, facing)
+    px, py = F.xy(0.0, 0.012)
+    return place(asset, px, py, z=z, facing=facing, col=col)
 
 
 def round_mirror(B, x, y, facing, r=0.45, z=1.55):

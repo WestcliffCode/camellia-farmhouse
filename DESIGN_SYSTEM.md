@@ -45,7 +45,7 @@ All meshes built by the scripts carry world-scale box UVs in metres (`UVMap`), s
 
 ## Lighting philosophy
 - Golden hour sliding into dusk, taken from a real capture: the sky is the Poly Haven HDRI `magalies_field_sunset` (clear-sky sunset over a dry field with bare trees), dimmed to strength 0.30 so it reads as dusk and supplies the horizon and treeline.
-- The HDRI's sun was located in the image (4.1 degrees above the horizon) and the map rotated so it sits behind the house, slightly left as seen from the street. A sun lamp is aligned with it and takes its colour from the sun disc measured in the same photograph (1.0, 0.36, 0.09, strength 5.0) to give crisp beams through the family room, kitchen, dining, game room and primary suite glazing.
+- The HDRI's sun was located in the image (4.1 degrees above the horizon) and the map rotated so it sits behind the house, 28 degrees to the left as seen from the street (the direction that puts the most direct sun indoors and reaches the office and bedroom 4). A sun lamp is aligned with it and takes its colour from the sun disc measured in the same photograph (1.0, 0.36, 0.09, strength 5.0) to give crisp beams through the family room, kitchen, dining, game room and primary suite glazing.
 - Practicals at 2700-3000 K carry the interiors: recessed cans (spot lights, 125 degree cone) on a grid, pendants over the island, ring chandeliers in foyer and dining, table and floor lamps in every sitting and sleeping room, under-cabinet spots in the kitchen, lanterns at the exterior doors.
 - AgX view transform, exposure +0.6. Glass and lamp-shade objects are excluded from shadow rays so sun and bulbs light the rooms.
 

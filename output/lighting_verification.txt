@@ -1,7 +1,7 @@
 Lighting verification (measured in the saved scene, 2026-11-13)
 Sky reference: Poly Haven HDRI magalies_field_sunset (captured clear-sky sunset over a field, CC0), 2k, strength 0.30
 Sun position measured in the HDRI: elevation 4.1 deg; map rotated so that sun sits behind the house
-Sun lamp aligned with it: elevation 4.1 deg, azimuth -18.8 deg from the house's back axis, colour (1.00, 0.36, 0.09) measured from the sun disc in the HDRI (mean of its 400 brightest pixels), strength 5.0 (same luminance as before)
+Sun lamp aligned with it: elevation 4.1 deg, azimuth -28 deg from the house's back axis (moved from -18.8 in the ninth pass, see the last section), colour (1.00, 0.36, 0.09) measured from the sun disc in the HDRI (mean of its 400 brightest pixels), strength 5.0 (same luminance as before)
 View transform AgX, exposure +0.6
 Practicals: 145 spot lights (recessed cans, under-cabinet, porch) and 34 point lights (lamps, pendants, chandeliers, sconces, lanterns, fire glow), all 2700-3000 K
 Direct sun reaching interior sample points through glazing (lit / tested; ray test toward the sun, glass treated as clear):
@@ -44,31 +44,34 @@ Sun coverage against the glazing design (exterior glazing whose outward normal f
 Golden-hour criterion: golden hour is conventionally the period with the sun between 6 deg above and 4 deg below the horizon.
 Sun in the captured sky and the aligned lamp: 4.1 deg above the horizon -> inside that band. HDRI metadata: time_of_day = sunset, weather = clear.
 
-Sun direction against per-room coverage (eighth pass; 15 x 15 grid at three heights per room, ray to the sun, glass treated as clear, trees and porches included):
-  room               -18.8 (chosen)    -35         -45         -55     (azimuth from the back axis toward the west, degrees)
-  great_room           129/351       118/351     124/351     106/351
-  game_room            226/675       166/675     109/675      70/675
-  primary_suite         91/660        90/660      98/660     109/660
-  foyer                195/663        35/663       0/663       0/663
-  back_vestibule       213/675        20/675      45/675       0/675
-  mud_vestibule         70/360        40/360      68/360     183/360
-  portico               58/675         0/675       0/675       0/675
-  jj_bath_a             63/675         0/675       0/675       0/675
-  hutch_niche           28/675       211/675     200/675     205/675
-  bedroom_4             14/675        39/675      86/675     124/675
-  family_foyer           0/639        22/639      62/639      76/639
-  utility                0/675         9/675      14/675      26/675
-  stair                  0/675        14/675      30/675       0/675
-  office                 3/675        16/675       0/675       0/675
-  summed sunlit fraction  1.89          1.39        1.51        1.76
-No single sun position lights every room: turning the sun west brings it into bedroom 4 (its only window faces the side
-of the house, so at the chosen azimuth the sun grazes that wall at 19 degrees) but takes it out of the foyer, the portico
-and most of the game room. The chosen azimuth keeps the beams in the rooms the cameras feature. The office has one window,
-facing the street, directly away from any sun that lights the back of the house.
-Window-by-window check at the chosen azimuth (35 rays per opening from just outside the glass toward the sun): the
-sun-facing openings are unobstructed (primary suite 35/35 and 35/35, game room 22/35, 35/35 and 35/35, great room 33/35,
-dining windows 26/35, dining slider 28/35, kitchen slider 30/35, bedroom 4 35/35); the few blocked rays hit porch posts,
-a tree or a chair on the porch.
+NOTE (ninth pass): the sun azimuth moved from -18.8 to -28 degrees. The per-room counts in the sections above were taken at -18.8
+and are kept as the record of that setting; the current numbers are below.
 
-Reference comparison: see output/lighting_reference.md and output/renders/lighting_reference_board.png (the captured sky
-panorama beside the renders, same view transform and exposure, with measured hues).
+Sun direction against per-room coverage (ninth pass, scripts/sun_coverage.py; 15 x 15 grid at three heights per room, ray to the sun,
+glass treated as clear, trees, porches and furniture included). Azimuth in degrees from the house's back axis toward the west:
+  room               -28 (chosen)   -18.8 (before)   -23        -29        -35        -45        -55
+  game_room            195/675        226/675       213/675    194/675    166/675    109/675     70/675
+  foyer                160/663        195/663       147/663    147/663     35/663      0/663      0/663
+  great_room           149/351        129/351       126/351    144/351    118/351    124/351    106/351
+  mud_vestibule        130/360         70/360       129/360    134/360     40/360     68/360    183/360
+  hutch_niche          125/675         28/675        94/675    164/675    211/675    200/675    205/675
+  primary_suite         68/660         91/660        65/660     58/660     90/660     98/660    109/660
+  family_foyer          65/639          0/639        50/639     71/639     22/639     62/639     76/639
+  bedroom_4             38/675         14/675        24/675     42/675     39/675     86/675    124/675
+  jj_bath_a             30/675         63/675        39/675     14/675      0/675      0/675      0/675
+  office                24/675          3/675        17/675     21/675     16/675      0/675      0/675
+  back_vestibule        23/675        213/675       136/675     21/675     20/675     45/675      0/675
+  stair                 15/675          0/675         0/675     17/675     14/675     30/675      0/675
+  portico                0/675         58/675         4/675      0/675      0/675      0/675      0/675
+  summed sunlit fraction  1.91           1.89          1.90       1.90       1.39       1.51       1.76
+At -28 degrees the sun passes through the family room's back windows, across the foyer opening and through the office's glazed
+doors, so the office (street-facing window only) gets direct sun for the first time: 24 of 675 points, up from 3. Bedroom 4 rises
+from 14 to 38, and the summed fraction is the highest of the directions tested. The cost is the portico (58 to 0), the back
+vestibule (213 to 23) and part of the primary suite (91 to 68). Twelve rooms now have at least 2% of their sample points in
+direct sun. Rooms glazed only to the street or the garage side with no line through the house (bedrooms 2 and 3, garage,
+primary bath and closet, utility, the second hall bath) cannot receive direct sun from a sun behind the house; they are lit
+by sky and lamps.
+
+Reference comparison: output/lighting_reference.md and output/renders/lighting_reference_board.png: the captured sky panorama
+beside the renders under the same view transform and exposure, neutral grey cards rendered on the open lawn (sun-facing card
+hue 23 against the photographed sun's 24; shade-facing card near neutral), and three interiors rendered with every lamp off.

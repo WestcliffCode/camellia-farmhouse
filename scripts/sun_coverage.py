@@ -8,7 +8,7 @@ import bpy, math
 from mathutils import Vector
 exec(open("/Users/westcliff/Dev/3d-architecture/camellia-luxury-farmhouse/scripts/bl_common.py").read())
 
-AZIMUTHS = (-18.8, -35.0, -45.0, -55.0)          # degrees from the house's back axis toward the west
+AZIMUTHS = (-28.0, -18.8, -23.0, -35.0, -45.0, -55.0)          # degrees from the house's back axis toward the west
 ELEV = math.radians(4.1)
 scene = bpy.context.scene
 dg = bpy.context.evaluated_depsgraph_get()
