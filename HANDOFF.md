@@ -1,4 +1,4 @@
-STATUS: IN PROGRESS — all eight stages built; final check renders being reviewed.
+STATUS: COMPLETE — all eight stages built, final renders reviewed, GLBs exported (2026-11-13).
 
 # Handoff
 
@@ -45,7 +45,7 @@ STATUS: IN PROGRESS — all eight stages built; final check renders being review
 - Procedural materials (lawn, fabric bump, art, glass shadow trick) need rebuilding in a game engine; see UNREAL_EXPORT.md.
 
 ## NEXT STEP
-Review the final renders, then mark complete. Optional polish: richer bath fixtures, window casings, more decor, an HDRI backdrop, a rendered walkthrough animation.
+Nothing is owed. Optional polish: richer bath fixtures, window casings, more decor, an HDRI backdrop, a rendered walkthrough animation.
 
 ## Log
-- 2026-11-13: Gate A passed; Stages 3–8 built and checked.
+- 2026-11-13: Gate A passed; Stages 3–8 built and checked. Final pass fixed a roof band crossing the kitchen tray and batten strips inside the bonus dormer; all 27 stills re-rendered from the saved file. Contact sheets: `output/renders/contact_*.png`.

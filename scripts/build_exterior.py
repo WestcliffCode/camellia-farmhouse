@@ -116,7 +116,7 @@ RIDGE1 = gable(X_WING_L, Y_FRONT, GW + 0.164, Y_FAMB, "x", PL1,
                holes_a=[rect_cw(X_PORT0 + 0.02, Y_FRONT - 0.6, X_PORT1 - 0.02, 4.3)],   # foyer vault rises through here
                cut=(1, K["YA0"] - yc1, K["YA1"] - yc1, K["ZA"] + 0.05))
 band(X_WING_L, Y_FRONT, GW, Y_FRONT + WT, CEIL, PL1 + 0.1)            # front band above the porch roof
-band(X_WING_L, Y_FAMB - WT, X_DIN, Y_FAMB, CEIL, PL1 + 0.1)           # back band above the porch roof
+band(X_WING_L, Y_FAMB - WT, 12.3, Y_FAMB, CEIL, PL1 + 0.1)            # back band above the porch roof (stops where the kitchen wall turns)
 # G2 bedroom wing, ridge N-S, and the bedroom-3 brick gable in front of it
 gable(XL, Y_JJ, X_WING_L, Y_GAME, "y", CEIL, over=(0.45, 0.0))
 gable(PX(285, 0)[0], Y_B3, X_WING_L, Y_JJ, "y", CEIL, ends=(True, False))
@@ -130,7 +130,7 @@ gable(GW, Y_B3, PX(1811, 0)[0], Y_JJ, "y", CEIL, ends=(True, False))      # gara
 # G4 primary suite
 gable(X_PS0, Y_DIN - 0.4, X_PS1, Y_PSB, "y", CEIL, over=(0.0, 0.45), ends=(False, True))
 # G5 dining / kitchen wing
-gable(X_DIN, 12.4, X_HALL, Y_DIN, "y", CEIL, over=(0.0, 0.0), ends=(False, True))
+gable(X_DIN, 12.4, X_HALL, Y_DIN, "y", CEIL + 0.36, over=(0.0, 0.0), ends=(False, True))   # clears the kitchen tray
 # G6 outdoor living, low gable
 gable(PX(1035, 0)[0] - 0.15, Y_DIN, X_PS0, PX(0, 70)[1] + 0.15, "x", CEIL + 0.25, pitch=5.0 / 12.0,
       ends=(True, False), base=CEIL + 0.25)

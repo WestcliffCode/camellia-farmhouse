@@ -133,7 +133,8 @@ for yy in (Y0, Y1):
 # dormer
 dc = ((XE + XD) / 2, (YD0 + YD1) / 2, ZF + 1.2)
 q([(XDS, YD0, ZD), (XD, YD0, ZD), (XD, YD1, ZD), (XDS, YD1, ZD)], dc)
-for yy in (YD0, YD1):
+XDI = XD - 0.03                       # interior faces sit 3 cm inside the exterior dormer walls
+for yy in (YD0 + 0.03, YD1 - 0.03):
     q([(XE, yy, ZF), (XD, yy, ZF), (XD, yy, ZD), (XDS, yy, ZD), (XE, yy, ZK)], dc)
 NW, WW, WS, WH = 4, 0.80, ZF + 0.80, ZF + 2.05     # dormer windows
 span = YD1 - YD0
@@ -145,10 +146,10 @@ edges.append(YD1)
 for k in range(len(edges) - 1):
     ya, yb = edges[k], edges[k + 1]
     if k % 2 == 0:
-        q([(XD, ya, ZF), (XD, yb, ZF), (XD, yb, ZD), (XD, ya, ZD)], dc)
+        q([(XDI, ya, ZF), (XDI, yb, ZF), (XDI, yb, ZD), (XDI, ya, ZD)], dc)
     else:
-        q([(XD, ya, ZF), (XD, yb, ZF), (XD, yb, WS), (XD, ya, WS)], dc)
-        q([(XD, ya, WH), (XD, yb, WH), (XD, yb, ZD), (XD, ya, ZD)], dc)
+        q([(XDI, ya, ZF), (XDI, yb, ZF), (XDI, yb, WS), (XDI, ya, WS)], dc)
+        q([(XDI, ya, WH), (XDI, yb, WH), (XDI, yb, ZD), (XDI, ya, ZD)], dc)
 shell = new_obj("GEO-bonus_shell", bm, col)
 
 # bonus floor finish (thin, separate object for its own material)

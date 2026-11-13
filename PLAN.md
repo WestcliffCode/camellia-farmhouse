@@ -1,6 +1,6 @@
 # Camellia Farmhouse — Build Plan
 
-Status: **APPROVED, build in progress.** Live checklist; `HANDOFF.md` carries resume context after every stage. Style note: the owner dropped the "New England / colonial revival" wording, so the plans, elevations and exterior renders define the style throughout.
+Status: **COMPLETE (2026-11-13).** Live checklist; `HANDOFF.md` carries resume context after every stage. Style note: the owner dropped the "New England / colonial revival" wording, so the plans, elevations and exterior renders define the style throughout.
 
 ## 1. What the references say
 

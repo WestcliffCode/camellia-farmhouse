@@ -235,6 +235,8 @@ for p in upper.data.polygons:
         p.material_index = 0
         q = (x + n.x * 0.25, y + n.y * 0.25)
         faces_room = z < 4.4 and room_at(q) is not None      # inner face of a gable above a vaulted room
+        if n.x < -0.5 and x > 25.9 and 3.6 < y < 8.7:        # inside face of the bonus dormer wall
+            faces_room = True
         if abs(n.z) < 0.1 and not faces_room:
             siding_faces.append(([upper.data.vertices[i].co.copy() for i in p.vertices], n.copy()))
 
