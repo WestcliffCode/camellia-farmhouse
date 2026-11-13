@@ -1,6 +1,6 @@
 # Camellia Farmhouse — Build Plan
 
-Status: **DRAFT, awaiting review.** Nothing is modeled yet. This file becomes the live checklist once approved; `HANDOFF.md` carries resume context after every stage.
+Status: **APPROVED, build in progress.** Live checklist; `HANDOFF.md` carries resume context after every stage. Style note: the owner dropped the "New England / colonial revival" wording, so the plans, elevations and exterior renders define the style throughout.
 
 ## 1. What the references say
 
@@ -38,22 +38,22 @@ Single-storey house, roughly 95 ft wide, with a bonus room over the garage. The 
 Hard rule from the brief: **no furnishing, texturing, lighting or rendering until Gate A passes.**
 
 ### Stage 1 — Analysis and design system
-- [ ] Trace the plan: load it as a top-view reference, calibrate scale against at least six labelled room dimensions, record every wall segment, opening, door and window in `scripts/plan_data.py`
-- [ ] Reconcile conflicts between labelled dimensions and drawn geometry (labels win; log each in HANDOFF.md)
-- [ ] Write `DESIGN_SYSTEM.md`: palette, material schedule, furniture scale rules, lighting philosophy, naming and collection conventions
+- [x] Trace the plan: load it as a top-view reference, calibrate scale against at least six labelled room dimensions, record every wall segment, opening, door and window in `scripts/plan_data.py`
+- [x] Reconcile conflicts between labelled dimensions and drawn geometry (labels win; log each in HANDOFF.md)
+- [x] Write `DESIGN_SYSTEM.md`: palette, material schedule, furniture scale rules, lighting philosophy, naming and collection conventions
 
 ### Stage 2 — Architectural structure (`scripts/build_structure.py`, rebuildable)
-- [ ] Slab and floor plates per room
-- [ ] Exterior walls (2×6, ~0.165 m) and interior walls (2×4, ~0.115 m) from the traced segments, including the 45° wing
-- [ ] Door and window openings cut; arched openings where the photos show them
-- [ ] Windows (frames, mullions, glass) and doors (panel, arched steel entry, sliders, garage doors), interior doors left ajar so every room is reachable
-- [ ] Ceilings: 10' flat; boxed 11' in kitchen and office; vaults in primary suite, game room, foyer (barrel vault per photo) and bonus room
-- [ ] Stair to bonus room, bonus room shell and dormer
-- [ ] Fireplaces: family room, primary suite, outdoor living; chimneys
-- [ ] Porches, columns, timber brackets and gable trusses
-- [ ] Roof: main gables, front gables, dormers, porch roofs, fascia
+- [x] Slab and floor plates per room
+- [x] Exterior walls (2×6, ~0.165 m) and interior walls (2×4, ~0.115 m) from the traced segments, including the 45° wing
+- [x] Door and window openings cut; arched openings where the photos show them
+- [x] Windows (frames, mullions, glass) and doors (panel, arched steel entry, sliders, garage doors), interior doors left ajar so every room is reachable
+- [x] Ceilings: 10' flat; boxed 11' in kitchen and office; vaults in primary suite, game room, foyer (barrel vault per photo) and bonus room
+- [x] Stair to bonus room, bonus room shell and dormer
+- [x] Fireplaces: family room, primary suite, outdoor living; chimneys
+- [x] Porches, columns, timber brackets and gable trusses
+- [x] Roof: main gables, front gables, dormers, porch roofs, fascia
 
-**Gate A — structure complete**
+**Gate A — structure complete (PASSED)**
 - Top-down orthographic view overlaid on the plan: walls within 5 cm of traced positions
 - Every room's interior dimensions within 2% of the plan label
 - A 1.6 m eye-height camera placed in every room sees a door opening; no sealed rooms
