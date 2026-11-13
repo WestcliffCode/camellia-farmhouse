@@ -8,6 +8,7 @@ print("externalized images:", externalize_images())
 
 
 # ------------------------------------------------------------------ material library
+# Every material is a single Principled BSDF fed by image textures or plain values, so glTF/FBX export keeps it.
 def principled(mat):
     return next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
 
@@ -27,23 +28,15 @@ def solid(name, color, rough=0.5, metal=0.0, bump=0.0, bump_scale=60.0, **extra)
     for k, v in extra.items():
         set_in(b, k, v)
     if bump > 0:
-        tc = nt.nodes.new("ShaderNodeTexCoord")
-        no = nt.nodes.new("ShaderNodeTexNoise")
-        set_in(no, "Scale", bump_scale)
-        set_in(no, "Detail", 6.0)
-        bp = nt.nodes.new("ShaderNodeBump")
-        set_in(bp, "Strength", bump)
-        set_in(bp, "Distance", 0.002)
-        nt.links.new(tc.outputs["Object"], no.inputs["Vector"])
-        nt.links.new(no.outputs[0], bp.inputs["Height"])
-        nt.links.new(bp.outputs[0], b.inputs["Normal"])
+        add_normal_tex(nt, b, strength=bump * 4.0, scale=bump_scale / 10.0)
     mat.diffuse_color = (*color, 1.0)
     mat.use_fake_user = True
     return mat
 
 
 def derive(src, name, size, sat=1.0, val=1.0, hue=0.5, rough_mul=1.0, normal=1.0, rot=0.0):
-    """Copy a Poly Haven material; UVs are in metres, so Mapping scale = 1 / real size."""
+    """Copy a Poly Haven material; UVs are in metres, so Mapping scale = 1 / real size.
+    Colour and roughness adjustments are baked into new texture files, not left as shader nodes."""
     old = bpy.data.materials.get(name)
     if old:
         old.name = name + "__old"
@@ -61,25 +54,11 @@ def derive(src, name, size, sat=1.0, val=1.0, hue=0.5, rough_mul=1.0, normal=1.0
         if l.to_node.type == "OUTPUT_MATERIAL" and l.to_socket.name == "Displacement":
             nt.links.remove(l)
     col_link = next((l for l in nt.links if l.to_node == b and l.to_socket.name == "Base Color"), None)
-    if col_link and (sat != 1.0 or val != 1.0 or hue != 0.5):
-        src_sock = col_link.from_socket
-        nt.links.remove(col_link)
-        hsv = nt.nodes.new("ShaderNodeHueSaturation")
-        set_in(hsv, "Hue", hue)
-        set_in(hsv, "Saturation", sat)
-        set_in(hsv, "Value", val)
-        nt.links.new(src_sock, hsv.inputs["Color"])
-        nt.links.new(hsv.outputs[0], b.inputs["Base Color"])
+    if col_link and col_link.from_node.type == "TEX_IMAGE" and (sat != 1.0 or val != 1.0 or hue != 0.5):
+        col_link.from_node.image = bake_tint(col_link.from_node.image, name + "_Diffuse", hue, sat, val)
     r_link = next((l for l in nt.links if l.to_node == b and l.to_socket.name == "Roughness"), None)
-    if r_link and rough_mul != 1.0:
-        src_sock = r_link.from_socket
-        nt.links.remove(r_link)
-        mth = nt.nodes.new("ShaderNodeMath")
-        mth.operation = "MULTIPLY"
-        mth.use_clamp = True
-        mth.inputs[1].default_value = rough_mul
-        nt.links.new(src_sock, mth.inputs[0])
-        nt.links.new(mth.outputs[0], b.inputs["Roughness"])
+    if r_link and r_link.from_node.type == "TEX_IMAGE" and rough_mul != 1.0:
+        r_link.from_node.image = bake_scale(r_link.from_node.image, name + "_Rough", rough_mul)
     for n in nt.nodes:
         if n.type == "NORMAL_MAP":
             set_in(n, "Strength", normal)
@@ -88,6 +67,7 @@ def derive(src, name, size, sat=1.0, val=1.0, hue=0.5, rough_mul=1.0, normal=1.0
 
 
 def glass(name, tint=(1, 1, 1), rough=0.0):
+    """Plain transmissive Principled. Glass objects are excluded from shadow rays so sunlight passes."""
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.use_nodes = True
     nt = mat.node_tree
@@ -99,13 +79,7 @@ def glass(name, tint=(1, 1, 1), rough=0.0):
     set_in(b, "Roughness", rough)
     set_in(b, "IOR", 1.45)
     set_in(b, "Transmission Weight", 1.0)
-    tr = nt.nodes.new("ShaderNodeBsdfTransparent")
-    lp = nt.nodes.new("ShaderNodeLightPath")
-    mx = nt.nodes.new("ShaderNodeMixShader")
-    nt.links.new(lp.outputs["Is Shadow Ray"], mx.inputs[0])
-    nt.links.new(b.outputs[0], mx.inputs[1])
-    nt.links.new(tr.outputs[0], mx.inputs[2])
-    nt.links.new(mx.outputs[0], out.inputs["Surface"])
+    nt.links.new(b.outputs[0], out.inputs["Surface"])
     mat.use_fake_user = True
     return mat
 
@@ -118,27 +92,10 @@ def grass(name):
         nt.nodes.remove(n)
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     b = nt.nodes.new("ShaderNodeBsdfPrincipled")
-    tc = nt.nodes.new("ShaderNodeTexCoord")
-    n1 = nt.nodes.new("ShaderNodeTexNoise")
-    set_in(n1, "Scale", 0.35)
-    set_in(n1, "Detail", 8.0)
-    n2 = nt.nodes.new("ShaderNodeTexNoise")
-    set_in(n2, "Scale", 90.0)
-    set_in(n2, "Detail", 4.0)
-    ramp = nt.nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].position = 0.35
-    ramp.color_ramp.elements[0].color = (0.035, 0.075, 0.018, 1)
-    ramp.color_ramp.elements[1].position = 0.75
-    ramp.color_ramp.elements[1].color = (0.085, 0.14, 0.03, 1)
-    bp = nt.nodes.new("ShaderNodeBump")
-    set_in(bp, "Strength", 0.6)
-    set_in(bp, "Distance", 0.03)
-    nt.links.new(tc.outputs["Object"], n1.inputs["Vector"])
-    nt.links.new(tc.outputs["Object"], n2.inputs["Vector"])
-    nt.links.new(n1.outputs[0], ramp.inputs[0])
-    nt.links.new(ramp.outputs[0], b.inputs["Base Color"])
-    nt.links.new(n2.outputs[0], bp.inputs["Height"])
-    nt.links.new(bp.outputs[0], b.inputs["Normal"])
+    img = ramp_image("TEX-lawn", [(0.0, (0.03, 0.065, 0.015)), (0.45, (0.05, 0.10, 0.022)), (1.0, (0.10, 0.16, 0.035))],
+                     n=1024, beta=1.3, seed=5, detail=0.35)
+    image_color(nt, b, img, 1.0 / 9.0)
+    add_normal_tex(nt, b, strength=1.2, scale=1.5)
     set_in(b, "Roughness", 0.9)
     nt.links.new(b.outputs[0], out.inputs["Surface"])
     mat.use_fake_user = True
@@ -330,6 +287,9 @@ for ob in bpy.data.objects:
             done += 1
             break
 assign(bpy.data.objects["GEO-ceiling_primary_suite"], M["charcoal"])
+for ob in bpy.data.objects:
+    if ob.type == "MESH" and (ob.name.startswith("GEO-glass_") or ob.name.endswith("_glass")):
+        ob.visible_shadow = False
 # stair: oak treads, white risers and sides
 st = bpy.data.objects["GEO-stair"]
 st.data.materials.clear()

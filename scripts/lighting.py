@@ -7,7 +7,10 @@ scene = bpy.context.scene
 K = json.loads(scene["camellia_shell"])
 LAMPS = json.loads(scene.get("camellia_lamps", "[]"))
 WARM = (1.0, 0.74, 0.50)
-SUN_ELEV = math.radians(11.0)
+# Recessed cans are spot lights (not area lights) so the whole rig survives glTF export (KHR_lights_punctual).
+CAN_GAIN = 3.0                       # a spot is a masked point light: ~3x the watts of the area disc it replaces
+CAN_CONE = (math.radians(125), 0.6)
+SUN_ELEV = math.radians(6.0)        # golden hour sliding into dusk
 SUN_DIR_XY = Vector((-0.34, 1.0)).normalized()      # where the sun sits, seen from the house (behind it, a little left)
 
 
@@ -76,14 +79,14 @@ for attr in ("dust_density", "aerosol_density"):
 # rotate the sky so its glow sits behind the sun lamp (sky's sun is at +Y when rotation is 0)
 if hasattr(sky, "sun_rotation"):
     sky.sun_rotation = math.atan2(SUN_DIR_XY.x, SUN_DIR_XY.y)
-bg.inputs["Strength"].default_value = 0.22
+bg.inputs["Strength"].default_value = 0.13
 nt.links.new(sky.outputs[0], bg.inputs["Color"])
 nt.links.new(bg.outputs[0], out.inputs["Surface"])
 print("sky type", pick, "of", types)
 
 sd = bpy.data.lights.new("LGT-sun", "SUN")
-sd.energy = 5.5
-sd.color = (1.0, 0.63, 0.36)
+sd.energy = 3.4
+sd.color = (1.0, 0.50, 0.22)
 sd.angle = math.radians(1.6)
 sun = bpy.data.objects.new("LGT-sun", sd)
 col.objects.link(sun)
@@ -137,6 +140,7 @@ CAN_ROOMS = {  # room: (spacing, watts)
     "powder": (1.2, 10), "jj_bath_a": (1.4, 11), "jj_bath_b": (1.4, 11), "back_vestibule": (1.3, 9),
     "garage": (2.6, 22), "foyer": (1.8, 10), "primary_wc": (1.2, 8), "closet_b3": (1.5, 8),
     "holiday": (1.5, 8), "mud_vestibule": (1.2, 8), "stair": (1.6, 9), "portico": (1.6, 10),
+    "storage_a": (2.0, 7), "storage_b": (2.0, 8), "linen": (1.2, 5), "closet_b2": (2.0, 6), "hutch_niche": (1.6, 6),
 }
 trim = bmesh.new()
 ncan = 0
@@ -154,10 +158,11 @@ for rn, (sp, watts) in CAN_ROOMS.items():
             if rn == "great_room" and pip((x, y), kt):
                 continue
             # keep cans off the walls
-            if not all(pip((x + dx, y + dy), r["outer"]) for dx, dy in ((0.35, 0), (-0.35, 0), (0, 0.35), (0, -0.35))):
+            off = 0.35 if min(x1 - x0, y1 - y0) > 1.0 else 0.12
+            if not all(pip((x + dx, y + dy), r["outer"]) for dx, dy in ((off, 0), (-off, 0), (0, off), (0, -off))):
                 continue
             z = ceil_z(rn, x, y)
-            add_light(f"LGT-can_{rn}_{i}{j}", "AREA", (x, y, z - 0.012), watts, size=0.11)
+            add_light(f"LGT-can_{rn}_{i}{j}", "SPOT", (x, y, z - 0.012), watts * CAN_GAIN, size=0.05, spot=CAN_CONE)
             m = bmesh.ops.create_circle(trim, cap_ends=True, radius=0.055, segments=16)
             for v in m["verts"]:
                 v.co = Vector((v.co.x + x, v.co.y + y, z - 0.004))
@@ -170,11 +175,12 @@ set_in(lb, "Base Color", (1, 0.9, 0.78, 1))
 set_in(lb, "Emission Color", (1.0, 0.78, 0.55, 1))
 set_in(lb, "Emission Strength", 6.0)
 assign(tob, lens)
+uv_box(tob)
 
 POWER = {"table": 22, "floor": 30, "pendant": 26, "chandelier": 55, "sconce": 12, "can": 12}
 for i, (x, y, z, kind, rn) in enumerate(LAMPS):
     if kind == "can":
-        add_light(f"LGT-{kind}_{rn}_{i}", "AREA", (x, y, z), POWER[kind], size=0.11)
+        add_light(f"LGT-{kind}_{rn}_{i}", "SPOT", (x, y, z), POWER[kind] * CAN_GAIN, size=0.05, spot=CAN_CONE)
     else:
         add_light(f"LGT-{kind}_{rn}_{i}", "POINT", (x, y, z), POWER[kind], size=0.05 if kind != "chandelier" else 0.3)
 
@@ -182,9 +188,11 @@ for i, (x, y, z, kind, rn) in enumerate(LAMPS):
 KF = Frame(PX(1207, 1260), (1, 1))
 ang = math.atan2(KF.u.y, KF.u.x)
 for s0, s1 in ((1.04, 2.05), (3.31, 5.32)):
-    c = KF.p((s0 + s1) / 2, 0.062 + 0.2, 1.435)
-    add_light("LGT-undercab", "AREA", c, 9 * (s1 - s0), size=s1 - s0, size_y=0.03, shape="RECTANGLE", rot=(0, 0, ang))
-add_light("LGT-hood", "AREA", KF.p(2.68, 0.36, 1.73), 14, size=0.5)
+    n = max(2, round((s1 - s0) / 0.45))
+    for k in range(n):
+        c = KF.p(s0 + (k + 0.5) * (s1 - s0) / n, 0.062 + 0.2, 1.435)
+        add_light("LGT-undercab", "SPOT", c, 9, size=0.02, spot=(math.radians(150), 0.8))
+add_light("LGT-hood", "SPOT", KF.p(2.68, 0.36, 1.73), 36, size=0.05, spot=(math.radians(140), 0.7))
 # fireplace glow
 add_light("LGT-fire_family", "POINT", (PX(646, 0)[0] + 0.25, 10.47, 0.62), 18, size=0.12, color=(1.0, 0.42, 0.14))
 # exterior lanterns: front door, garage doors, back porch
@@ -197,15 +205,16 @@ for (x, y, z) in ((11.9, -0.12, 2.15), (14.45, -0.12, 2.15), (26.45, 5.9, 2.3), 
         v.co = Vector((v.co.x * 0.14 + x, v.co.y * 0.14 + y, v.co.z * 0.06 + z + 0.2))
 lan = new_obj("GEO-lantern_caps", ext, col)
 assign(lan, MAT("hw"))
+uv_box(lan)
 # porch ceiling lights
 for (x, y) in ((9.5, 1.6), (16.9, 1.6), (9.0, 15.2), (16.5, 23.6), (14.2, 19.0)):
-    add_light("LGT-porch", "AREA", (x, y, CEIL - 0.015), 14, size=0.12)
+    add_light("LGT-porch", "SPOT", (x, y, CEIL - 0.015), 14 * CAN_GAIN, size=0.05, spot=CAN_CONE)
 
 # bonus room: cans along the flat collar, plus the dormer
 ZC = K["ZF"] + 2.74 - 0.012
 for yy in (2.2, 4.2, 6.2, 8.2, 10.2):
-    add_light("LGT-can_bonus", "AREA", (22.52, yy, ZC), 16, size=0.11)
-add_light("LGT-can_bonus_dormer", "AREA", (25.2, 6.15, K["ZD"] - 0.012), 14, size=0.11)
-add_light("LGT-can_stair", "AREA", (19.8, (K["YA0"] + K["YA1"]) / 2, K["ZA"] - 0.012), 12, size=0.11)
+    add_light("LGT-can_bonus", "SPOT", (22.52, yy, ZC), 16 * CAN_GAIN, size=0.05, spot=CAN_CONE)
+add_light("LGT-can_bonus_dormer", "SPOT", (25.2, 6.15, K["ZD"] - 0.012), 14 * CAN_GAIN, size=0.05, spot=CAN_CONE)
+add_light("LGT-can_stair", "SPOT", (19.8, (K["YA0"] + K["YA1"]) / 2, K["ZA"] - 0.012), 12 * CAN_GAIN, size=0.05, spot=CAN_CONE)
 
 print("cans", ncan, "lamp lights", len(LAMPS), "total lights", len([o for o in col.objects if o.type == "LIGHT"]))

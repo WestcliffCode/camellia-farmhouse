@@ -97,23 +97,14 @@ def _fabric(name, color, rough=0.92, sheen=0.35, bump=0.12, scale=420.0):
     set_in(b, "Base Color", (*color, 1.0))
     set_in(b, "Roughness", rough)
     set_in(b, "Sheen Weight", sheen)
-    tc = nt.nodes.new("ShaderNodeTexCoord")
-    no = nt.nodes.new("ShaderNodeTexNoise")
-    set_in(no, "Scale", scale)
-    set_in(no, "Detail", 3.0)
-    bp = nt.nodes.new("ShaderNodeBump")
-    set_in(bp, "Strength", bump)
-    set_in(bp, "Distance", 0.002)
-    nt.links.new(tc.outputs["Object"], no.inputs["Vector"])
-    nt.links.new(no.outputs[0], bp.inputs["Height"])
-    nt.links.new(bp.outputs[0], b.inputs["Normal"])
+    add_normal_tex(nt, b, strength=bump * 5.0, scale=scale / 30.0)
     nt.links.new(b.outputs[0], out.inputs["Surface"])
     mat.diffuse_color = (*color, 1.0)
     mat.use_fake_user = True
     return mat
 
 
-def _art(name, c1, c2, c3, scale=1.6):
+def _art(name, c1, c2, c3, scale=1.6, seed=1):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.use_nodes = True
     nt = mat.node_tree
@@ -121,21 +112,8 @@ def _art(name, c1, c2, c3, scale=1.6):
         nt.nodes.remove(n)
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     b = nt.nodes.new("ShaderNodeBsdfPrincipled")
-    tc = nt.nodes.new("ShaderNodeTexCoord")
-    no = nt.nodes.new("ShaderNodeTexNoise")
-    set_in(no, "Scale", scale)
-    set_in(no, "Detail", 1.5)
-    set_in(no, "Distortion", 1.2)
-    ramp = nt.nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.interpolation = "EASE"
-    e = ramp.color_ramp.elements
-    e[0].position, e[0].color = 0.38, (*c1, 1)
-    e[1].position, e[1].color = 0.62, (*c3, 1)
-    m = e.new(0.5)
-    m.color = (*c2, 1)
-    nt.links.new(tc.outputs["Object"], no.inputs["Vector"])
-    nt.links.new(no.outputs[0], ramp.inputs[0])
-    nt.links.new(ramp.outputs[0], b.inputs["Base Color"])
+    img = ramp_image("TEX-" + name[4:], [(0.0, c1), (0.42, c1), (0.5, c2), (0.6, c3), (1.0, c3)], n=768, beta=2.3, seed=seed)
+    image_color(nt, b, img, 1.0 / scale)
     set_in(b, "Roughness", 0.85)
     nt.links.new(b.outputs[0], out.inputs["Surface"])
     mat.use_fake_user = True
@@ -143,21 +121,19 @@ def _art(name, c1, c2, c3, scale=1.6):
 
 
 def _shade(name, color):
+    """Lamp shade: matte, softly self-lit. Shade objects are excluded from shadow rays so the bulb lights the room."""
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.use_nodes = True
     nt = mat.node_tree
     for n in list(nt.nodes):
         nt.nodes.remove(n)
     out = nt.nodes.new("ShaderNodeOutputMaterial")
-    d = nt.nodes.new("ShaderNodeBsdfDiffuse")
-    t = nt.nodes.new("ShaderNodeBsdfTranslucent")
-    mx = nt.nodes.new("ShaderNodeMixShader")
-    d.inputs[0].default_value = (*color, 1)
-    t.inputs[0].default_value = (*color, 1)
-    mx.inputs[0].default_value = 0.55
-    nt.links.new(d.outputs[0], mx.inputs[1])
-    nt.links.new(t.outputs[0], mx.inputs[2])
-    nt.links.new(mx.outputs[0], out.inputs["Surface"])
+    b = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    set_in(b, "Base Color", (*color, 1.0))
+    set_in(b, "Roughness", 0.9)
+    set_in(b, "Emission Color", (1.0, 0.72, 0.45, 1.0))
+    set_in(b, "Emission Strength", 2.2)
+    nt.links.new(b.outputs[0], out.inputs["Surface"])
     mat.use_fake_user = True
     return mat
 
@@ -173,9 +149,9 @@ def furnish_materials():
         MATN[k] = "MAT-" + k
     m = _fabric("MAT-leather_tan", (0.36, 0.20, 0.11), rough=0.48, sheen=0.0, bump=0.06, scale=180.0)
     MATN["leather"] = m.name
-    _art("MAT-art_a", (0.82, 0.78, 0.70), (0.42, 0.47, 0.42), (0.12, 0.15, 0.18))
-    _art("MAT-art_b", (0.85, 0.82, 0.76), (0.62, 0.38, 0.24), (0.20, 0.17, 0.15), 2.3)
-    _art("MAT-art_c", (0.80, 0.80, 0.78), (0.30, 0.38, 0.46), (0.08, 0.10, 0.14), 1.1)
+    _art("MAT-art_a", (0.82, 0.78, 0.70), (0.42, 0.47, 0.42), (0.12, 0.15, 0.18), 1.8, seed=21)
+    _art("MAT-art_b", (0.85, 0.82, 0.76), (0.62, 0.38, 0.24), (0.20, 0.17, 0.15), 1.5, seed=22)
+    _art("MAT-art_c", (0.80, 0.80, 0.78), (0.30, 0.38, 0.46), (0.08, 0.10, 0.14), 1.3, seed=23)
     MATN.update({"art_a": "MAT-art_a", "art_b": "MAT-art_b", "art_c": "MAT-art_c"})
     _shade("MAT-lamp_shade", (0.88, 0.84, 0.76))
     MATN["shade"] = "MAT-lamp_shade"
@@ -186,6 +162,8 @@ def furnish_materials():
     set_in(b, "Roughness", 0.45)
     mat.use_fake_user = True
     MATN["ceramic"] = mat.name
+    _fabric("MAT-mat_rubber", (0.03, 0.03, 0.035), rough=0.8, sheen=0.0, bump=0.2, scale=200.0)
+    MATN["rubber"] = "MAT-mat_rubber"
     bs = bpy.data.materials.get("MAT-basin") or bpy.data.materials.new("MAT-basin")
     bs.use_nodes = True
     bn = next(n for n in bs.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
@@ -219,6 +197,9 @@ def soften(obs, width=0.03):
             p.use_smooth = True
         wn = ob.modifiers.new("WeightedNormal", "WEIGHTED_NORMAL")
         wn.keep_sharp = True
+    for ob in obs:
+        if ob.name.endswith(("_glass", "_shade")):
+            ob.visible_shadow = False
 
 
 def facing_frame(x, y, facing):
@@ -505,3 +486,16 @@ def shelf_wall(B, x, y, facing, w, levels=(0.4, 0.85, 1.3, 1.75), d=0.4, key="tr
                 continue
             s = -w / 2 + 0.05 + i * 0.075
             B.box(cols_[(i * 5) % len(cols_)], F, s, s + 0.05, d * 0.6 - 0.22, d * 0.6 + 0.22, rod_z - 1.0 + (i % 3) * 0.12, rod_z - 0.03)
+
+
+def stock(B, x, y, facing, w, d, levels, keys=("rug_warm", "fab_oat", "trim", "oak"), h=0.26, step=0.4, size=0.3):
+    """Storage bins / folded stacks standing on the shelves of a shelf_wall."""
+    F = facing_frame(x, y, facing)
+    for zi, zz in enumerate(levels):
+        n = int((w - 0.12) / step)
+        for i in range(n):
+            if (i + zi) % 5 == 4:
+                continue
+            s = -w / 2 + 0.08 + i * step
+            hh = h * (0.7 + 0.3 * ((i * 3 + zi) % 3) / 2)
+            B.box(keys[(i + zi * 2) % len(keys)], F, s, s + size, 0.04, d - 0.04, zz + 0.025, zz + 0.025 + hh)

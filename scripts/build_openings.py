@@ -17,6 +17,7 @@ CLOSETS = ("closet", "storage", "holiday", "linen", "pantry", "hutch")
 CIRC = {"great_room", "bed_hall", "bed_hall_s", "primary_hall", "family_foyer",
         "back_vestibule", "foyer", "mud_vestibule", "stair", "garage"}
 KEEP_CLOSED = {"garage_pantry_door"}
+OPEN_CLOSETS = {"linen", "storage_b"}        # shown open so the shelving reads from the hall / bedroom
 
 
 def pip(pt, ring):
@@ -247,7 +248,7 @@ def build_door(o):
         into, closed = (1 if aa >= ab else -1), False
     if "garage" in (na, nb) or "outside" in (na, nb) or o["name"] in KEEP_CLOSED:
         closed = True
-    if kind == "door_arch":
+    if kind == "door_arch" or na in OPEN_CLOSETS or nb in OPEN_CLOSETS:
         closed = False
     style = {"ddoor_glass": "steel", "door_arch": "oakglass"}.get(kind, "shaker")
     jamb_and_casing(o, L, casing=(kind != "door_arch"))
@@ -275,7 +276,8 @@ def build_door(o):
             best = (dist, sgn, hinge)
     _, sgn, hinge = best
     base = -u * sgn
-    ang = 0.0 if closed else math.radians(86) * (-sgn * into)
+    open_deg = 172 if "linen" in (na, nb) else 86        # linen door folds flat so it clears the hall
+    ang = 0.0 if closed else math.radians(open_deg) * (-sgn * into)
     bm, bg = leaf_mesh(W, Ht, style)
     place_leaf(o["name"], bm, bg, hinge, base, ang, W=W)
 

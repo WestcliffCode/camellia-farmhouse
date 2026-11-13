@@ -408,3 +408,152 @@ def base_cabinet(B, F, s0, s1, d_wall, z_top=0.885, depth=0.6, key="trim", n=Non
         B.box(top, F, s0 - overhang, s1 + overhang, d_wall, d_wall + depth + overhang + 0.02, z_top, z_top + 0.03)
     if splash > 0:
         B.box(top or "quartz", F, s0, s1, d_wall, d_wall + 0.015, z_top + 0.03, z_top + 0.03 + splash)
+
+
+# ------------------------------------------------------------------ baked textures (everything stays image-based so it exports)
+import numpy as np
+
+TEX_DIR = os.path.join(ROOT, "project-files", "textures")
+
+
+def _load_tex(path, name, noncolor=False):
+    img = bpy.data.images.get(name)
+    if img is not None and bpy.path.abspath(img.filepath) != path:
+        bpy.data.images.remove(img)
+        img = None
+    if img is None:
+        img = bpy.data.images.load(path, check_existing=False)
+        img.name = name
+    img.filepath = "//textures/" + os.path.basename(path)
+    if noncolor:
+        img.colorspace_settings.name = "Non-Color"
+    return img
+
+
+def _write_tex(arr, path, name, noncolor=False):
+    """arr: (h, w, 3) float 0..1 in the file's own encoding. Saved as PNG, reloaded as a file image."""
+    h, w = arr.shape[:2]
+    rgba = np.ones((h, w, 4), np.float32)
+    rgba[..., :3] = np.clip(arr, 0.0, 1.0)
+    tmp = bpy.data.images.new("__bake_tmp", w, h, alpha=False)
+    if noncolor:
+        tmp.colorspace_settings.name = "Non-Color"
+    tmp.pixels.foreach_set(rgba.ravel())
+    tmp.filepath_raw = path
+    tmp.file_format = "PNG"
+    tmp.save()
+    bpy.data.images.remove(tmp)
+    return _load_tex(path, name, noncolor)
+
+
+def _pixels(img):
+    w, h = img.size
+    px = np.empty(w * h * 4, np.float32)
+    img.pixels.foreach_get(px)
+    return px.reshape(h, w, 4)[..., :3]
+
+
+def _to_lin(c):
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+
+
+def _to_srgb(c):
+    c = np.clip(c, 0.0, 1.0)
+    return np.where(c <= 0.0031308, c * 12.92, 1.055 * c ** (1 / 2.4) - 0.055)
+
+
+def bake_tint(img, name, hue=0.5, sat=1.0, val=1.0):
+    """Hue/Saturation/Value applied in linear space (as the shader node did), written to a new texture."""
+    path = os.path.join(TEX_DIR, f"{name}_h{hue:.3f}_s{sat:.2f}_v{val:.2f}.png")
+    if os.path.exists(path):
+        return _load_tex(path, name)
+    lin = _to_lin(_pixels(img))
+    mx, mn = lin.max(-1), lin.min(-1)
+    d = mx - mn
+    v = mx
+    s = np.where(mx > 1e-8, d / np.maximum(mx, 1e-8), 0.0)
+    r, g, b = lin[..., 0], lin[..., 1], lin[..., 2]
+    dd = np.maximum(d, 1e-8)
+    hch = np.where(mx == r, ((g - b) / dd) % 6.0, np.where(mx == g, (b - r) / dd + 2.0, (r - g) / dd + 4.0)) / 6.0
+    hch = np.where(d < 1e-8, 0.0, hch)
+    hch = (hch + hue - 0.5) % 1.0
+    s = np.clip(s * sat, 0.0, 1.0)
+    v = v * val
+    i = np.floor(hch * 6.0)
+    f = hch * 6.0 - i
+    p, q, t = v * (1 - s), v * (1 - f * s), v * (1 - (1 - f) * s)
+    i = i.astype(np.int32) % 6
+    out = np.stack([np.choose(i, [v, q, p, p, t, v]), np.choose(i, [t, v, v, q, p, p]), np.choose(i, [p, p, t, v, v, q])], -1)
+    return _write_tex(_to_srgb(out), path, name)
+
+
+def bake_scale(img, name, mul):
+    path = os.path.join(TEX_DIR, f"{name}_x{mul:.2f}.png")
+    if os.path.exists(path):
+        return _load_tex(path, name, noncolor=True)
+    return _write_tex(_pixels(img) * mul, path, name, noncolor=True)
+
+
+def tile_noise(n, beta, seed):
+    """Seamlessly tileable 1/f^beta noise in 0..1."""
+    rng = np.random.default_rng(seed)
+    fx = np.fft.fftfreq(n)[:, None]
+    fy = np.fft.fftfreq(n)[None, :]
+    f = np.sqrt(fx * fx + fy * fy)
+    f[0, 0] = 1.0
+    spec = (rng.normal(size=(n, n)) + 1j * rng.normal(size=(n, n))) / f ** beta
+    spec[0, 0] = 0.0
+    h = np.real(np.fft.ifft2(spec))
+    return (h - h.min()) / (h.max() - h.min())
+
+
+def noise_normal_image(name="TEX-noise_normal", n=512, beta=0.9, seed=7, strength=3.0):
+    path = os.path.join(TEX_DIR, name + ".png")
+    if os.path.exists(path):
+        return _load_tex(path, name, noncolor=True)
+    h = tile_noise(n, beta, seed)
+    dx = (np.roll(h, -1, 1) - np.roll(h, 1, 1)) * strength * n / 64.0
+    dy = (np.roll(h, -1, 0) - np.roll(h, 1, 0)) * strength * n / 64.0
+    nz = np.ones_like(h)
+    ln = np.sqrt(dx * dx + dy * dy + nz * nz)
+    arr = np.stack([0.5 - 0.5 * dx / ln, 0.5 - 0.5 * dy / ln, 0.5 + 0.5 * nz / ln], -1)
+    return _write_tex(arr, path, name, noncolor=True)
+
+
+def ramp_image(name, colors, n=1024, beta=1.6, seed=3, detail=0.0):
+    """Tileable colour field: noise pushed through a linear-RGB colour ramp [(pos, (r, g, b)), ...]."""
+    path = os.path.join(TEX_DIR, name + ".png")
+    if os.path.exists(path):
+        return _load_tex(path, name)
+    h = tile_noise(n, beta, seed)
+    if detail > 0:
+        h = np.clip(h + (tile_noise(n, 0.3, seed + 11) - 0.5) * detail, 0, 1)
+    pos = np.array([c[0] for c in colors])
+    out = np.stack([np.interp(h, pos, np.array([c[1][k] for c in colors])) for k in range(3)], -1)
+    return _write_tex(_to_srgb(out), path, name)
+
+
+def add_normal_tex(nt, bsdf, strength=0.3, scale=8.0, image=None):
+    """UV-mapped tileable noise normal map (replaces procedural bump so the material exports)."""
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    mp = nt.nodes.new("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = (scale, scale, 1.0)
+    tx = nt.nodes.new("ShaderNodeTexImage")
+    tx.image = image or noise_normal_image()
+    nm = nt.nodes.new("ShaderNodeNormalMap")
+    set_in(nm, "Strength", strength)
+    nt.links.new(tc.outputs["UV"], mp.inputs["Vector"])
+    nt.links.new(mp.outputs["Vector"], tx.inputs["Vector"])
+    nt.links.new(tx.outputs["Color"], nm.inputs["Color"])
+    nt.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
+
+
+def image_color(nt, bsdf, image, scale):
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    mp = nt.nodes.new("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = (scale, scale, 1.0)
+    tx = nt.nodes.new("ShaderNodeTexImage")
+    tx.image = image
+    nt.links.new(tc.outputs["UV"], mp.inputs["Vector"])
+    nt.links.new(mp.outputs["Vector"], tx.inputs["Vector"])
+    nt.links.new(tx.outputs["Color"], bsdf.inputs["Base Color"])

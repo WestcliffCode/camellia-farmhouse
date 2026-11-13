@@ -255,8 +255,6 @@ shelf_wall(B, 26.1, 14.22, (0, 1), w=1.7, rod_z=1.7)
 shelf_wall(B, 5.0, 7.15, (0, -1), w=2.2, rod_z=1.7)
 shelf_wall(B, 10.14, 7.15, (0, -1), w=2.4, d=0.36, levels=(1.85,), rod_z=1.7)
 shelf_wall(B, 3.87, 10.52, (0, -1), w=2.0, levels=(0.4, 0.85, 1.3, 1.75, 2.2))
-place("steel_frame_shelves_01", 23.4, 11.22 - 0.27, facing=(0, -1), col=C)
-place("steel_frame_shelves_01", 24.7, 11.22 - 0.27, facing=(0, -1), col=C)
 done(B)
 
 # ------------------------------------------------------------------ outdoor
@@ -274,6 +272,66 @@ place("potted_plant_01", 10.95, 1.15, col=C)
 place("potted_plant_01", 15.4, 1.15, col=C)
 place("modern_arm_chair_01", 8.7, 1.75, facing=(0, -1), col=C)
 place("modern_arm_chair_01", 9.95, 1.75, facing=(0, -1), col=C)
+done(B)
+
+# ------------------------------------------------------------------ garage: workbench, storage wall, bins, parking mats
+B, C = R("garage")
+GX = room_bounds("garage")[0]
+table(B, GX + 0.42, 4.0, 2.0, 0.7, h=0.92, legs="steel", facing=(1, 0))
+GF = facing_frame(GX, 4.0, (1, 0))
+B.box("oak", GF, -1.0, 1.0, 0.0, 0.02, 1.15, 2.05)
+for k, s in enumerate((-0.8, -0.55, -0.3, 0.0, 0.3, 0.6, 0.85)):
+    B.rod("hw", GF.p(s, 0.03, 1.95), GF.p(s, 0.03, 1.95 - 0.25 - 0.08 * (k % 3)), 0.012, seg=6)
+B.box("oak", GF, -1.0, 1.0, 0.0, 0.25, 2.1, 2.13)
+stock(B, GX, 4.0, (1, 0), 2.0, 0.25, (2.105,), keys=("trim", "fab_grey", "rug_warm"), h=0.22)
+GC = facing_frame(GX, 6.25, (1, 0))
+B.box("hw", GC, -0.8, 0.8, 0.02, 0.50, 0.0, 0.10)
+B.box("trim", GC, -0.8, 0.8, 0.0, 0.58, 0.10, 2.25)
+cab_doors(B, "trim", GC, -0.8, 0.8, 0.58, 0.10, 1.15, 3)
+cab_doors(B, "trim", GC, -0.8, 0.8, 0.58, 1.15, 2.25, 3)
+B.cyl("siding", (GX + 0.45, 1.25), 0.27, 0.0, 0.95, seg=20)
+B.cyl("siding", (GX + 0.45, 1.25), 0.29, 0.95, 0.99, seg=20)
+B.cyl("hw", (GX + 1.15, 1.25), 0.27, 0.0, 0.95, seg=20)
+B.cyl("hw", (GX + 1.15, 1.25), 0.29, 0.95, 0.99, seg=20)
+for yy in (3.05, 6.6, 9.3):
+    rug(B, 22.9, yy, 5.2, 2.3, "rubber", z=0.0)
+place("steel_frame_shelves_01", 23.4, 11.22 - 0.27, facing=(0, -1), col=C)
+place("steel_frame_shelves_01", 24.7, 11.22 - 0.27, facing=(0, -1), col=C)
+stock(B, 23.4, 11.22 - 0.02, (0, -1), 1.0, 0.48, (0.52, 0.98, 1.42), keys=("trim", "rug_warm", "fab_grey"), h=0.3)
+stock(B, 24.7, 11.22 - 0.02, (0, -1), 1.0, 0.48, (0.52, 0.98, 1.42), keys=("rug_warm", "trim", "fab_grey"), h=0.3)
+done(B)
+
+# ------------------------------------------------------------------ storage rooms, linen, pantry goods, hall runners
+B, C = R("storage")
+LV = (0.4, 0.9, 1.4, 1.9)
+shelf_wall(B, 1.42, 9.92, (0, 1), w=2.3, d=0.36, levels=LV)
+stock(B, 1.42, 9.92, (0, 1), 2.3, 0.36, LV)
+shelf_wall(B, 1.42, 9.79, (0, -1), w=2.3, d=0.45, levels=LV)
+stock(B, 1.42, 9.79, (0, -1), 2.3, 0.45, LV, keys=("trim", "rug_warm", "fab_grey", "oak"))
+stock(B, 3.87, 10.52, (0, -1), 2.0, 0.40, (0.4, 0.85, 1.3, 1.75), keys=("fab_rust", "trim", "fab_sage", "rug_warm"))
+LL = (0.4, 0.8, 1.2, 1.6, 2.0)
+shelf_wall(B, 20.27, 17.0, (1, 0), w=1.15, d=0.3, levels=LL)
+stock(B, 20.27, 17.0, (1, 0), 1.15, 0.3, LL, keys=("towel", "fab_white", "towel", "fab_oat"), h=0.2, step=0.34, size=0.28)
+PFg = Frame(PX(1207, 1260), (1, 1))
+for zi, zz in enumerate((0.45, 0.9, 1.35, 1.8, 2.25)):
+    for k in range(15):
+        if (k + zi) % 6 == 5:
+            continue
+        s0 = 0.64 + k * 0.28
+        wd = 0.12 + 0.05 * ((k * 7 + zi * 3) % 3)
+        hg = 0.14 + 0.05 * ((k * 5 + zi) % 4)
+        key = ("ceramic", "oak", "trim", "fab_oat", "glassdark")[(k + zi * 2) % 5]
+        if (k + zi) % 3 == 0:
+            xy = PFg.xy(s0 + wd / 2, -0.25)
+            B.cyl(key, xy, wd / 2, zz + 0.03, zz + 0.03 + hg, seg=14)
+        else:
+            B.box(key, PFg, s0, s0 + wd, -0.36, -0.14, zz + 0.03, zz + 0.03 + hg)
+rug(B, 5.6, 7.85, 3.2, 0.85, "rug_warm")
+art(B, 5.4, 8.47, (0, -1), w=0.7, h=0.9, z=1.2, key="art_b")
+rug(B, 21.53, 19.6, 0.85, 2.4, "rug_blue")
+art(B, 20.93, 19.6, (1, 0), w=0.8, h=1.0, z=1.2, key="art_a", frame="oak")
+rug(B, 21.75, 13.3, 0.9, 2.8, "rug_blue")
+rug(B, 6.37, 13.07, 1.6, 0.9, "rug_warm")
 done(B)
 
 bpy.context.scene["camellia_lamps"] = json.dumps(LAMPS)

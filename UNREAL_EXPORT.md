@@ -2,36 +2,39 @@
 
 ## What is exported
 `project-files/export/` holds one GLB per package, written by `scripts/export_glb.py`
-(`Blender -b project-files/camellia-farmhouse.blend -P scripts/export_glb.py`). The folder is git-ignored; re-run the script to regenerate it.
+(`Blender -b project-files/camellia-farmhouse.blend -P scripts/export_glb.py`). The folder is git-ignored; re-run the script to regenerate it. `scripts/validate_glb.py` re-imports the packages into an empty scene and reports what survived; the last run is summarised below.
 
 | File | Contents |
 | --- | --- |
 | `camellia_structure.glb` | walls, slab, ceilings, floors, stair, bonus-room shell, windows, doors, cladding battens |
-| `camellia_millwork.glb` | base and crown, panel moulding, kitchen, coffee bar, pantry shelving, fireplaces, exterior timber |
+| `camellia_millwork.glb` | base and crown, casings, panel moulding, kitchen, coffee bar, pantry shelving, fireplaces, exterior timber |
 | `camellia_exterior.glb` | roofs, gable walls, dormers, porches, chimneys, ground, paving |
-| `camellia_furn_<room>.glb` | furniture and decor per room (Poly Haven instances are realised into meshes) |
-| `camellia_cameras_lights.glb` | 27 still cameras, the walkthrough camera, all lights (punctual lights extension) |
+| `camellia_furn_<room>.glb` (18 files) | furniture and decor per room; Poly Haven instances are realised into meshes |
+| `camellia_cameras_lights.glb` | 29 still cameras, the walkthrough camera with its move baked to keyframes, 180 lights |
+
+## Validation (re-import test)
+- All 22 packages import. Every mesh carries a UV set.
+- Textured materials arrive with their base-colour, roughness and normal maps; glass arrives as a transmissive material (KHR_materials_transmission); lamp shades, bulbs and can lenses arrive emissive.
+- `camellia_cameras_lights.glb`: 30 cameras, 180 lights (145 spot, 34 point, 1 sun via KHR_lights_punctual) and the baked walkthrough animation.
 
 ## Conventions
 - Units are metres; Blender is Z-up and the GLB is written Y-up. Import into Unreal with glTF import (Interchange): scale 100 (cm), no extra rotation.
 - Origin is the front-left exterior corner of the house at finished-floor level, so every package drops in at 0,0,0 and lines up.
-- All procedural meshes carry one UV set (`UVMap`) in real-world metres; tiling lives in the material's Mapping scale (1 / tile size, see `DESIGN_SYSTEM.md`). In Unreal set the material's UV tiling to the same value, or bake it into the UVs.
+- All procedural meshes carry one UV set (`UVMap`) in real-world metres. Texture tiling is the material's UV scale (1 / tile size, see `DESIGN_SYSTEM.md`) and is exported as a texture transform (KHR_texture_transform).
+- Materials are a single Principled BSDF with image textures or plain values. Colour tints on the Poly Haven sets are baked into the exported textures, so no node work needs recreating.
 - No lightmap UVs are authored. Use Lumen, or let Unreal generate lightmap UVs on import (most meshes are boxes and flat panels, so auto-unwrap is clean).
-- Materials are Principled BSDF with base colour, roughness and normal maps, plus plain colour/metal values, so they convert directly. Exceptions to rebuild by hand:
-  - `MAT-glass`: mixes a transparent shader on shadow rays so sunlight passes in Cycles. Replace with a thin translucent glass material.
-  - `MAT-lamp_shade`: diffuse + translucent mix. Use a two-sided foliage/subsurface shading model.
-  - `MAT-grass`, `MAT-art_*`, fabric bump: procedural noise does not export. Assign engine materials or bake.
-  - Hue/saturation tints on the Poly Haven sets (oak floor, brick, limestone, shingles, oak) are node adjustments. The GLB carries the untinted textures; apply the tint in the engine material or bake from Blender.
 - Collision: use complex-as-simple for walls, floors and the stair; furniture can take auto convex hulls.
-- Doors are separate objects with the origin on the hinge (`GEO-doorleaf_*`), ready to animate or to drive from Blueprints.
+- Doors are separate objects with the origin on the hinge (`GEO-doorleaf_*`), ready to animate or drive from Blueprints.
+- The trees (`COL-landscape`, one 1.15 M-polygon Poly Haven tree instanced 14 times) are left out of the packages on purpose; use engine foliage instead.
 
 ## Cameras
-- Still cameras are `CAM-<room>`; timeline markers at frames 2001-2027 bind one camera per frame.
-- The walkthrough is `CAM-walkthrough` on `CRV-walkthrough` (frames 1-1080 at 24 fps, 45 s) with a Track-To aim target riding the same path. Constraints do not export: bake the camera (Object > Animation > Bake Action, visual keying) before exporting it as animation, or rebuild it in Sequencer from the path.
+- Still cameras are `CAM-<room>`; in the .blend, timeline markers at frames 2001-2029 bind one camera per frame.
+- The walkthrough is `CAM-walkthrough` on `CRV-walkthrough` (frames 1-1080 at 24 fps, 45 s). The export script bakes the path and aim constraints to keyframes in the exported file; the .blend keeps the live constraints for editing.
 
 ## Lights
-- Light powers are Blender watts. Unreal will need exposure-relative rescaling; keep the ratios (cans 8-22 W, lamps 22-30 W, chandeliers 55 W, sun strength 5.5).
-- Sun: 11 degrees elevation, behind the house and slightly left as seen from the front. Sky: Blender's multiple-scattering sky at strength 0.22 (replace with Sky Atmosphere).
+- Light powers are Blender watts and need exposure-relative rescaling in Unreal; keep the ratios (cans 15-66 W spots with a 125 degree cone, lamps 22-30 W points, chandeliers 55 W, sun strength 3.4).
+- Two Cycles-only settings to mirror in engine: glass and lamp-shade meshes do not cast shadows (so sun and bulbs light the rooms), and lights are hidden from camera and reflection rays.
+- Sun: 6 degrees elevation, behind the house and slightly left as seen from the front. Sky: Blender's multiple-scattering sky at strength 0.13 (replace with Sky Atmosphere at a matching sun angle).
 
 ## FBX
-Not written by default. For FBX, export the same collections with scale 1.0, "Apply Scalings: FBX All", forward -Y, up Z, and bake the walkthrough camera first.
+Not written by default. For FBX, export the same collections with scale 1.0, "Apply Scalings: FBX All", forward -Y, up Z, and bake the walkthrough camera first (the export script shows the bake call).

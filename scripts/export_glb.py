@@ -25,6 +25,20 @@ def objs(cname):
 
 
 vl = bpy.context.view_layer
+# bake the walkthrough camera (path + track-to constraints) to plain keyframes so the GLB carries the move.
+# This runs in the background session only; the saved .blend keeps the live constraints.
+try:
+    for o in vl.objects:
+        o.select_set(False)
+    walk = bpy.data.objects["CAM-walkthrough"]
+    walk.select_set(True)
+    vl.objects.active = walk
+    bpy.context.scene.frame_set(1)
+    bpy.ops.nla.bake(frame_start=1, frame_end=1080, step=4, only_selected=True, visual_keying=True,
+                     clear_constraints=True, bake_types={"OBJECT"})
+    print("BAKED walkthrough camera")
+except Exception as e:
+    print("BAKE FAILED", e)
 for name, cols in GROUPS.items():
     for o in vl.objects:
         o.select_set(False)
@@ -40,7 +54,8 @@ for name, cols in GROUPS.items():
         continue
     path = os.path.join(OUT, name + ".glb")
     kw = dict(filepath=path, export_format="GLB", use_selection=True, export_apply=True, export_yup=True,
-              export_cameras="cameras" in name, export_lights="lights" in name)
+              export_cameras="cameras" in name, export_lights="lights" in name,
+              export_animations="cameras" in name)
     try:
         bpy.ops.export_scene.gltf(**kw)
         print(f"EXPORTED {name}: {n} objects, {os.path.getsize(path) / 1e6:.1f} MB")

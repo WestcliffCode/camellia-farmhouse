@@ -26,9 +26,10 @@ Modern farmhouse: buff brick and near-black board-and-batten outside, calm white
 | MAT-roof_shingle | `roof_slates_03` (darkened) | 3.0 m | roofs |
 | MAT-concrete | `concrete_floor` (desaturated) | 2.08 m | slab, porches, garage floor, paving |
 | MAT-oak / MAT-timber / MAT-oak_ceiling | `oak_veneer_03` | 1.0 m | cabinetry, beams, mantels, shelves, posts, porch ceilings |
-| Procedural | — | — | paints, quartz, metals, glass, porcelain, lawn |
+| Value-only Principled | — | — | paints, quartz, metals, glass, porcelain (with a shared tileable noise normal map where texture is needed) |
+| Generated textures | `TEX-lawn`, `TEX-art_*`, `TEX-noise_normal` (written by the scripts) | 9 m / 1.3-1.8 m / per material | lawn, artwork, surface grain |
 
-All meshes built by the scripts carry world-scale box UVs in metres (`UVMap`), so a material's Mapping scale is 1 / tile size. Textures live in `project-files/textures/` and are referenced relatively.
+All meshes built by the scripts carry world-scale box UVs in metres (`UVMap`), so a material's Mapping scale is 1 / tile size. Every `MAT-` material is one Principled BSDF fed only by image textures and plain values: colour tints and roughness changes on the Poly Haven sets are baked into new texture files, so nothing depends on procedural shader nodes. Textures live in `project-files/textures/` and are referenced relatively.
 
 ## Geometry rules
 - Ceiling 3.048 m; doors, windows and cased openings head at 2.44 m; arched openings 2.6–2.75 m.
@@ -37,9 +38,10 @@ All meshes built by the scripts carry world-scale box UVs in metres (`UVMap`), s
 - Walk paths stay at least 0.9 m clear. Rugs sit 0.3–0.45 m off walls; front sofa legs on the rug.
 
 ## Lighting philosophy
-- Golden hour: low sun (about 8°) from behind the house, raking through the family room, kitchen, dining and primary suite glazing; cool sky fill from the front.
-- Practicals at 2700–3000 K: recessed cans on a grid, pendants over the island, chandeliers in foyer and dining, table and floor lamps in every sitting and sleeping room, under-cabinet strips in the kitchen.
-- AgX view transform; exposure set so the window view holds detail and rooms stay readable without flat fill.
+- Golden hour sliding into dusk: sun 6 degrees above the horizon, behind the house and slightly left as seen from the street, deep orange (1.0, 0.50, 0.22), strength 3.4. It rakes through the family room, kitchen, dining and primary suite glazing and backlights the front elevation.
+- Sky: Blender multiple-scattering sky at strength 0.13, rotated so its glow sits behind the sun; the street side reads as twilight with the windows glowing.
+- Practicals at 2700-3000 K carry the interiors: recessed cans (spot lights, 125 degree cone) on a grid, pendants over the island, ring chandeliers in foyer and dining, table and floor lamps in every sitting and sleeping room, under-cabinet spots in the kitchen, lanterns at the exterior doors.
+- AgX view transform, exposure +0.6. Glass and lamp-shade objects are excluded from shadow rays so sun and bulbs light the rooms.
 
 ## Naming
 `GEO-` meshes, `MAT-` materials, `LGT-` lights, `CAM-` cameras, `COL-` collections; furniture collections are `COL-furn_<room>`; Poly Haven imports keep their asset id in the object name.
