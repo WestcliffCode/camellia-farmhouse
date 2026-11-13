@@ -1,0 +1,25 @@
+.DS_Store
+*.blend1
+*.blend2
+
+# Third-party reference photos and plans: local only (public repo)
+/plans/
+/exterior/
+/dining/
+/family-room/
+/foyer/
+/garage-entryway/
+/kitchen/
+/laundry/
+/office/
+/pantry/
+/primary-bath/
+/primary-closet/
+/primary-suite/
+/secondary-bathrooms/
+/secondary-bedrooms/
+
+# Downloaded textures and bulky outputs
+/project-files/textures/
+/project-files/export/
+/output/tmp/
