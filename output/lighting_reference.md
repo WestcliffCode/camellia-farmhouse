@@ -25,6 +25,20 @@ Board: `output/renders/lighting_reference_board.png` (sky panorama and renders u
 - Shade-facing card R/B 1.04 against the sun-facing card's 1.44: the fill is cooler than the key. It is close to neutral rather than blue, because that card also receives light bounced off the sunlit dry grass in the photograph's lower half.
 - Sun-facing to shade-facing luminance 189 : 129.
 
+## One material in sun and in shade: concrete paving in the exterior renders
+
+The paving, porch slabs and driveway share one neutral grey material. A ray test (`scripts/concrete_sun_shade.py`) marks which of its pixels in each exterior render are in direct sun and which are in shade; the colours below are read from the final renders at those pixels.
+
+| Render | pixels in sun | colour in sun | hue | R/B | pixels in shade | colour in shade | hue | R/B |
+|---|---|---|---|---|---|---|---|---|
+| ext_front | 0 | too few | - | - | 332 | 140, 130, 123 | 24 | 1.14 |
+| ext_front_left | 23 | 201, 153, 122 | 23 | 1.65 | 170 | 130, 124, 121 | 23 | 1.08 |
+| ext_garage | 2 | too few | - | - | 1161 | 130, 131, 134 | 226 | 0.97 |
+| ext_back | 342 | 190, 148, 121 | 23 | 1.57 | 38 | 143, 114, 95 | 25 | 1.51 |
+| all four, pooled | 365 | 191, 148, 121 | 23 | 1.58 | 1701 | 132, 130, 130 | 358 | 1.02 |
+
+- Same material, sun against shade: R/B 1.58 against 1.02; hue 23 against 358 (photographed sun 24, sky opposite the sun 206).
+
 ## Sunlit patches in the renders
 
 | Render | sunlit patches RGB | hue | R/B | hue vs sun disc | hue vs sky glow |

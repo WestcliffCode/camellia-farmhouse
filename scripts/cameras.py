@@ -117,12 +117,14 @@ for i, ob in enumerate(cams):
 mk = scene.timeline_markers.new("walkthrough", frame=1)
 mk.camera = walk
 # orthographic elevation cameras, for checking the roof and facades against the elevation sheets
-for name, loc, rz in (("elev_front", (13.6, -60, 4.6), 0), ("elev_back", (13.6, 90, 4.6), 180),
-                      ("elev_right", (90, 13.0, 4.6), 90), ("elev_left", (-60, 13.0, 4.6), -90)):
+for k, (name, loc, rz) in enumerate((("elev_front", (13.6, -60, 4.6), 0), ("elev_back", (13.6, 90, 4.6), 180),
+                                    ("elev_right", (90, 13.0, 4.6), 90), ("elev_left", (-60, 13.0, 4.6), -90))):
     cd = bpy.data.cameras.new("CAM-" + name)
     cd.type, cd.ortho_scale, cd.clip_end = "ORTHO", 34, 300
     ob = bpy.data.objects.new("CAM-" + name, cd)
     ob.location, ob.rotation_euler = loc, (math.radians(90), 0, math.radians(rz))
     col.objects.link(ob)
+    mk = scene.timeline_markers.new(ob.name, frame=2101 + k)        # elevation cameras: frames 2101-2104
+    mk.camera = ob
 scene.camera = bpy.data.objects["CAM-family"]
 print("cameras", len(cams) + 1, "walkthrough frames", FRAMES)

@@ -55,6 +55,30 @@ CARD = [("facing_sun", "card to sun"), ("facing_away", "card away"), ("facing_up
 card = {k: np.array(cards[k], np.float32) for k, _ in CARD}
 rows = [(v, *measure(os.path.join(FIN, v + ".png"))) for v in VIEWS]
 OFF = ["game_room", "primary_suite", "kitchen"]
+
+
+def at_pixels(path, uv):
+    """Mean colour of a render at the given (u, v-from-top) positions, 3 x 3 pixels each."""
+    a = np.asarray(Image.open(path).convert("RGB"), np.float32)
+    h, w = a.shape[:2]
+    acc = [a[max(int(v * h) - 1, 0):int(v * h) + 2, max(int(u * w) - 1, 0):int(u * w) + 2].reshape(-1, 3).mean(0) for u, v in uv]
+    return np.mean(acc, 0)
+
+
+cpx = json.load(open(os.path.join(REF, "concrete_pixels.json")))
+conc = {}          # view -> (sunlit colour or None, n, shade colour or None, n)
+pool = {"sunlit": [], "shade": []}
+for v, d_ in cpx.items():
+    row = []
+    for k in ("sunlit", "shade"):
+        if len(d_[k]) >= 20:
+            c = at_pixels(os.path.join(FIN, v + ".png"), d_[k])
+            pool[k].append((c, len(d_[k])))
+            row += [c, len(d_[k])]
+        else:
+            row += [None, len(d_[k])]
+    conc[v] = row
+conc_all = {k: sum(c * n for c, n in pool[k]) / sum(n for c, n in pool[k]) for k in pool}
 off = [(v, *measure(os.path.join(REF, f"sun_sky_only_{v}.png"))) for v in OFF]
 
 strip = Image.open(os.path.join(REF, "sky_strip.png")).convert("RGB")
@@ -87,7 +111,7 @@ for i, (v, sun, shade, frac) in enumerate(off):
     d.text((x, y + th + 8), v.replace("_", " ") + ", lamps off", font=font(22), fill=(200, 196, 188))
 y += th + 46 + 10
 
-d.text((PAD, y), "Measured colours (display-referred): reference sky | grey cards on the lawn (albedo 0.5) | sunlit patches in each render",
+d.text((PAD, y), "Measured colours (display-referred): reference sky | grey cards on the lawn | concrete paving in the exterior renders | sunlit patches per render",
        font=font(24, True), fill=(240, 236, 228))
 y += 44
 SW = 120
@@ -102,17 +126,22 @@ def swatch(x, label, rgb, sub):
 x = PAD
 for key, label in (("sun_disc", "sun disc"), ("glow_near_sun", "glow by sun"), ("sky_opposite", "sky opposite"), ("zenith", "zenith")):
     swatch(x, label, ref[key], f"hue {hue(ref[key]):.0f}  R/B {rb(ref[key]):.2f}")
-    x += SW + 44
+    x += SW + 28
 d.line([x - 6, y, x - 6, y + SW + 50], fill=(90, 88, 84), width=2)
-x += 32
+x += 26
 for key, label in CARD:
     swatch(x, label, card[key], f"hue {hue(card[key]):.0f}  R/B {rb(card[key]):.2f}")
-    x += SW + 44
+    x += SW + 28
 d.line([x - 6, y, x - 6, y + SW + 50], fill=(90, 88, 84), width=2)
-x += 32
+x += 26
+for key, label in (("sunlit", "paving, sun"), ("shade", "paving, shade")):
+    swatch(x, label, conc_all[key], f"hue {hue(conc_all[key]):.0f}  R/B {rb(conc_all[key]):.2f}")
+    x += SW + 28
+d.line([x - 6, y, x - 6, y + SW + 50], fill=(90, 88, 84), width=2)
+x += 26
 for v, sun, shade, frac in rows:
     swatch(x, v.replace("_", " ")[:13], sun, f"hue {hue(sun):.0f}  R/B {rb(sun):.2f}")
-    x += SW + 44
+    x += SW + 28
 board.save(os.path.join(ROOT, "output/renders/lighting_reference_board.png"))
 
 glow_h = hue(ref["glow_near_sun"])
@@ -140,6 +169,16 @@ lines += ["", f"- Sun-facing card hue {hue(cs):.0f} against the photographed sun
           f"- Shade-facing card R/B {rb(ca):.2f} against the sun-facing card's {rb(cs):.2f}: the fill is {'cooler than' if fill_ok else 'not cooler than'} the key. "
           f"It is close to neutral rather than blue, because that card also receives light bounced off the sunlit dry grass in the photograph's lower half.",
           f"- Sun-facing to shade-facing luminance {lum(cs):.0f} : {lum(ca):.0f}.", "",
+          "## One material in sun and in shade: concrete paving in the exterior renders", "",
+          "The paving, porch slabs and driveway share one neutral grey material. A ray test (`scripts/concrete_sun_shade.py`) marks which of its "
+          "pixels in each exterior render are in direct sun and which are in shade; the colours below are read from the final renders at those pixels.", "",
+          "| Render | pixels in sun | colour in sun | hue | R/B | pixels in shade | colour in shade | hue | R/B |", "|---|---|---|---|---|---|---|---|---|"]
+fmt = lambda c: f"{c[0]:.0f}, {c[1]:.0f}, {c[2]:.0f} | {hue(c):.0f} | {rb(c):.2f}" if c is not None else "too few | - | -"
+for v, (cs_, ns_, ch_, nh_) in conc.items():
+    lines.append(f"| {v} | {ns_} | {fmt(cs_)} | {nh_} | {fmt(ch_)} |")
+lines.append(f"| all four, pooled | {sum(n for c, n in pool['sunlit'])} | {fmt(conc_all['sunlit'])} | {sum(n for c, n in pool['shade'])} | {fmt(conc_all['shade'])} |")
+lines += ["", f"- Same material, sun against shade: R/B {rb(conc_all['sunlit']):.2f} against {rb(conc_all['shade']):.2f}; hue {hue(conc_all['sunlit']):.0f} against {hue(conc_all['shade']):.0f} "
+          f"(photographed sun {disc_h:.0f}, sky opposite the sun {hue(ref['sky_opposite']):.0f}).", "",
           "## Sunlit patches in the renders", "",
           "| Render | sunlit patches RGB | hue | R/B | hue vs sun disc | hue vs sky glow |", "|---|---|---|---|---|---|"]
 n_ok = 0

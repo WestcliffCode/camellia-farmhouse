@@ -28,7 +28,7 @@ STATUS: COMPLETE — house built, furnished, lit from a captured golden-hour sky
 
 ## Timeline
 - Frames 1–1080 (24 fps): `CAM-walkthrough` follows `CRV-walkthrough` from the foyer through family room, kitchen, dining, mudroom arch and primary hall into the primary suite.
-- Frames 2001–2031: one still camera per frame (markers bind them). `render_stills.py` jumps to the right frame per camera.
+- Frames 2001–2033: one still camera per frame (markers bind them); frames 2101–2104: the four elevation cameras. `render_stills.py` sets the camera directly.
 
 ## Checks done (all re-runnable)
 - Geometry against the plan: room areas match plan labels within a few percent (game room 29.15 vs 29.1 m², garage 75.3 vs 74.1, primary suite 23.4 vs 23.9, bedroom 3 16.6 vs 16.7). Every room is reachable through a door or opening.
@@ -38,8 +38,10 @@ STATUS: COMPLETE — house built, furnished, lit from a captured golden-hour sky
 - Materials: every `MAT-` material is one Principled BSDF with image textures or plain values (node-type audit returns no exceptions); every `GEO-` mesh has UVs.
 - Lighting (`output/lighting_verification.txt`): sky is the captured Poly Haven sunset HDRI `magalies_field_sunset`; its sun (4.1 degrees) was located in the image and the sun lamp aligned with it; the sun lamp's colour is measured from the sun disc in the same photograph; a sweep of sun directions (`scripts/sun_coverage.py`) shows the chosen one (28 degrees west of the back axis) gives the most direct sun indoors, including the office and bedroom 4, and that no direction lights every room; a ray test shows direct sun in 12 rooms; the sun's 4.1 degrees sits inside the conventional golden-hour band (6 degrees above to 4 below the horizon).
 - Lighting against its reference (`scripts/hdri_reference_strip.py` + `scripts/lighting_reference_board.py` → `output/renders/lighting_reference_board.png`, `output/lighting_reference.md`): the captured sky panorama beside six renders under the same view transform and exposure; the hue of the sunlit patches in all six is within 6 degrees of the hue of the photographed sun and its glow. `scripts/lighting_cards.py` adds neutral grey cards rendered on the lawn (sun-facing card hue 23 against the photographed sun's 24; shade-facing card near neutral) and three interiors rendered with every lamp off.
+- Two lighting presets (`output/lighting_verification.txt`): sunset (default; sun behind the house, used for all main renders and the walkthrough) and sunrise (`LGT-sun_sunrise` + `WORLD-camellia_sunrise`, stored switched off; `render_stills.py --preset sunrise`). All 16 rooms with exterior glazing get direct sun in at least one; sunrise renders are in `output/renders/final_sunrise/`.
+- Camera rig (`scripts/check_camera_rig.py` → `output/camera_rig_check.md`): 37 still cameras each bound to a marker frame, clear of geometry and aimed at a surface; walkthrough evaluated on all 1080 frames: inside the footprint throughout, at least 0.26 m from any surface, no segment crossing geometry, largest step 2.9 cm.
 - Render quality (`scripts/render_qc.py` → `output/render_qc.md`): all 33 room, exterior and detail renders pass a stated bar for mean luminance, clipped highlights, crushed shadows and warmth.
-- Walkthrough: camera stays inside the footprint for all 1080 frames with at least 0.30 m to the nearest surface; rendered end to end as an MP4.
+- Walkthrough: rendered end to end as an MP4 (540 frames at 640×360, 45 s), tracked in the repository; path checks are under Camera rig above.
 - Export (`scripts/validate_glb.py` → `output/glb_validation.txt`): all 23 GLBs re-import in an empty scene with meshes, UVs, textures, transmissive glass, cameras, lights and the baked walkthrough animation.
 
 ## Design decisions on record
@@ -53,6 +55,7 @@ STATUS: COMPLETE — house built, furnished, lit from a captured golden-hour sky
 Nothing is owed. Optional polish: richer bath fixtures, window casings, more decor, a full-resolution walkthrough render.
 
 ## Log
+- 2026-11-13 (tenth pass): second lighting preset added (sunrise: sun in front of the house) so every glazed room gets direct golden-hour sun in one preset or the other, with 12 views rendered under it; same-material sun-against-shade measurement added to the lighting reference; camera rig check script added (it found the four elevation cameras without markers; fixed).
 - 2026-11-13 (ninth pass): sun turned to 28 degrees west of the back axis so it reaches the office and bedroom 4 (12 rooms with direct sun); 14 more Poly Haven pieces placed (framed prints, standing frames, vases, brass cookware on the range, an ottoman): 96 placements of 27 assets; grey-card and lamps-off lighting measurements added to the reference board; bonus-room cans raised after the view fell under the brightness bar; everything re-rendered, re-exported and re-validated.
 - 2026-11-13 (eighth pass): counters, painted cabinetry and millwork, and garage mats moved from plain values to Poly Haven texture sets (89% of furniture surface now textured, up from 68%); sun lamp colour taken from the HDRI's sun; lighting reference board and per-room sun coverage script added; all stills and the walkthrough re-rendered; GLBs re-exported and re-validated.
 - 2026-11-13 (seventh pass): last three wall contacts removed (audit at zero); sun coverage checked against glazing orientation; golden-hour band check recorded.

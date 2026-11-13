@@ -75,3 +75,35 @@ by sky and lamps.
 Reference comparison: output/lighting_reference.md and output/renders/lighting_reference_board.png: the captured sky panorama
 beside the renders under the same view transform and exposure, neutral grey cards rendered on the open lawn (sun-facing card
 hue 23 against the photographed sun's 24; shade-facing card near neutral), and three interiors rendered with every lamp off.
+
+Second lighting preset, sunrise (tenth pass). One sun cannot enter rooms glazed away from it, so the scene carries a second
+preset: the same captured sky turned so its sun stands in front of the house and to the right (152 degrees from the back
+axis), with its own sun lamp LGT-sun_sunrise and world WORLD-camellia_sunrise. It is stored switched off;
+`render_stills.py --preset sunrise` swaps it in. Same elevation (4.1 deg), colour and strength as the sunset sun.
+Direct sun per room under the sunrise preset (same ray test; sample heights 0.5, 1.2 and 1.9 m, so beams entering through
+the high windows of the primary bath and closet, sill 1.85 m, are mostly above the samples):
+  portico              384/675
+  bedroom_3            114/675
+  bedroom_2             78/585
+  office                55/675
+  garage                48/645
+  foyer                 38/663
+  hall_bath             19/660
+  bed_hall              15/657
+  primary_bath          12/597
+  utility               10/675
+  bed_hall_s            10/591
+  jj_bath_b              9/675
+  primary_closet         8/675
+Directions tested for it (summed sunlit fraction): 115 deg 0.79, 125 deg 0.75, 135 deg 0.78, 145 deg 0.96, 148 deg 1.05,
+150 deg 1.15, 152 deg 1.21 (chosen), 155 deg 1.44, 165 deg 1.78. Beyond 152 the east-side rooms (primary bath and closet,
+utility) lose their sun, so 152 was kept although larger angles put more sun into the street-side rooms.
+
+Every room with exterior glazing against the two presets (points in direct sun, sunset / sunrise):
+  primary_suite 68 / 0      game_room 195 / 0       great_room (family, kitchen, dining) 149 / 0
+  back_vestibule 23 / 0     bedroom_4 38 / 0        jj_bath_a 30 / 0        foyer 160 / 38        office 24 / 55
+  bedroom_2 0 / 78          bedroom_3 0 / 114       garage 0 / 48           portico 0 / 384       jj_bath_b 0 / 9
+  primary_bath 0 / 12       primary_closet 0 / 8    utility 0 / 10
+All 16 glazed rooms receive direct golden-hour sun in at least one preset. Rooms with no exterior glazing (pantry, powder,
+closets, storage, linen, stair, halls) receive it only through openings to neighbouring rooms, or not at all.
+Renders under the sunrise preset: output/renders/final_sunrise/ (12 views; all 12 pass the same quality bar, output/render_qc_sunrise.md; sheet output/renders/contact_sunrise.png).

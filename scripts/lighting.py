@@ -132,6 +132,33 @@ to_sun = Vector((SUN_DIR_XY.x * math.cos(SUN_ELEV), SUN_DIR_XY.y * math.cos(SUN_
 sun.rotation_euler = to_sun.to_track_quat("Z", "Y").to_euler()      # a sun lamp shines along its -Z
 sun.location = (13, 40, 12)
 
+# ------------------------------------------------------------------ second preset: sunrise
+# One sun cannot enter rooms glazed away from it. The same captured sky, turned so its sun stands in front of the
+# house and to the right (152 degrees from the back axis, chosen with scripts/sun_coverage.py), lights the rooms glazed
+# to the street and the garage side. It is stored switched off: `render_stills.py --preset sunrise` hides LGT-sun,
+# shows LGT-sun_sunrise and sets the world to WORLD-camellia_sunrise. Everything else (practicals, exposure) is shared.
+SUN_AM_XY = Vector((math.sin(math.radians(152.0)), math.cos(math.radians(152.0))))
+old_w = bpy.data.worlds.get("WORLD-camellia_sunrise")
+if old_w is not None:
+    bpy.data.worlds.remove(old_w)
+world_am = world.copy()
+world_am.name = "WORLD-camellia_sunrise"
+world_am.use_fake_user = True
+if hdr is not None:
+    mp_am = next(n for n in world_am.node_tree.nodes if n.type == "MAPPING")
+    mp_am.inputs["Rotation"].default_value = (0.0, 0.0, math.atan2(s_dir.y, s_dir.x) - math.atan2(SUN_AM_XY.y, SUN_AM_XY.x))
+sd_am = sd.copy()
+sd_am.name = "LGT-sun_sunrise"
+sun_am = bpy.data.objects.new("LGT-sun_sunrise", sd_am)
+col.objects.link(sun_am)
+to_am = Vector((SUN_AM_XY.x * math.cos(SUN_ELEV), SUN_AM_XY.y * math.cos(SUN_ELEV), math.sin(SUN_ELEV)))
+sun_am.rotation_euler = to_am.to_track_quat("Z", "Y").to_euler()
+sun_am.location = (20, -30, 12)
+sun_am.hide_render = True
+sun_am.hide_viewport = True
+scene["camellia_presets"] = json.dumps({"sunset": {"sun": "LGT-sun", "world": "WORLD-camellia", "azimuth": -28.0},
+                                        "sunrise": {"sun": "LGT-sun_sunrise", "world": "WORLD-camellia_sunrise", "azimuth": 152.0}})
+
 
 # ------------------------------------------------------------------ practicals
 def add_light(name, kind, loc, power, size=0.08, color=WARM, rot=None, spot=None, shape=None, size_y=None):

@@ -1,5 +1,5 @@
 """Score the final renders against a stated bar and write output/render_qc.md.
-  uv run --with opencv-python-headless --with numpy python scripts/render_qc.py output/renders/final"""
+  uv run --with opencv-python-headless --with numpy python scripts/render_qc.py output/renders/final [report.md]"""
 import sys, os, glob, cv2, numpy as np
 d = sys.argv[1]
 BAR = {"interior": dict(mean=(85, 205), clipped=8.0, crushed=6.0, warm=1.10),
@@ -26,6 +26,6 @@ out = ["# Render quality check", "",
        "red/blue ratio at least 1.10 (warm light). Exteriors: mean 55-190, clipped at most 4%, crushed at most 12%, red/blue at least 0.95.", "",
        "| View | Kind | Mean luminance | Clipped % | Crushed % | R/B | Result |", "| --- | --- | --- | --- | --- | --- | --- |"] + rows
 out += ["", f"{len(rows) - fails} of {len(rows)} views pass."]
-open("output/render_qc.md", "w").write("\n".join(out) + "\n")
+open(sys.argv[2] if len(sys.argv) > 2 else "output/render_qc.md", "w").write("\n".join(out) + "\n")
 print(f"{len(rows) - fails} of {len(rows)} pass")
 print("\n".join(r for r in rows if "FAIL" in r))
