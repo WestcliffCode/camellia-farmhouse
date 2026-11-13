@@ -27,3 +27,6 @@
 /project-files/checkpoints/
 /output/renders/walkthrough/frames/
 /assets_incoming/
+/project-files/*_test.blend
+/project-files/*_test.blend1
+/output/renders/test_appliances/

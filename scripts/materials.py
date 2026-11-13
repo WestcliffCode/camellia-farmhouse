@@ -167,6 +167,9 @@ M["roof_metal"] = solid("MAT-roof_metal", (0.03, 0.031, 0.034), 0.36, metal=0.9)
 M["garage_door"] = solid("MAT-garage_door", (0.05, 0.052, 0.056), 0.45)
 M["quartz"] = slab("marble_01", "MAT-quartz", 1.5, (0.070, 0.566, 0.453, 0.779), sat=0.18, val=1.75, rough=0.14)   # counters: one Poly Haven marble tile as a slab
 M["steel"] = solid("MAT-stainless", (0.55, 0.56, 0.57), 0.24, metal=1.0)
+# range hood: the same values as MAT-app_stainless on the manufacturer appliances (scripts/asset_convert.py), so the
+# hood matches the range. Kept as a separate local material because the appliances' own material is linked.
+M["hood"] = solid("MAT-hood_stainless", (0.62, 0.63, 0.64), 0.27, metal=1.0)
 M["brass"] = solid("MAT-brass", (0.78, 0.57, 0.27), 0.28, metal=1.0)
 M["porcelain"] = solid("MAT-porcelain", (0.9, 0.9, 0.9), 0.08)
 M["mirror"] = solid("MAT-mirror", (0.9, 0.9, 0.9), 0.02, metal=1.0)

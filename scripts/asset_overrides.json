@@ -1,0 +1,4 @@
+{
+  "range_kitchen": {"model": "Viking 48 in range (manufacturer OBJ)", "frame": "kitchen_wall", "s": 2.69, "d_back": 0.082},
+  "fridge_kitchen": {"model": "Sub-Zero PRO 36 in glass-door refrigerator, right hinge (manufacturer OBJ)", "frame": "kitchen_wall", "s": 0.535, "d_back": 0.082}
+}

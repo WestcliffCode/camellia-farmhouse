@@ -47,9 +47,9 @@ A replacement within about 2 in (5 cm) of the listed width and depth drops in wi
 
 | Slot id | Room | Now | Size to fit | Qty | Notes |
 |---|---|---|---|---|---|
-| `range_kitchen` | Kitchen | 48 in range, six burners, double oven, stainless | 48 × 27 × 36.5 in (1.22 × 0.68 × 0.925 m) in a 49.5 in opening | 1 | Under the oak hood; the most-seen appliance. |
-| `fridge_kitchen` | Kitchen | Built-in French-door refrigerator, stainless | 36 × 29 × 83 in (0.91 × 0.74 × 2.10 m) in a 36.5 in wide, 83.5 in high bay | 1 | Cabinet above runs to the ceiling. A panel-ready unit is an option; I would build the panels. |
-| `hood_insert` | Kitchen | None: the oak hood is an empty shell | Liner for a 49.5 in wide hood, underside 68.5 in above the floor | 1 | Optional. Only seen from below. |
+| `range_kitchen` (done) | Kitchen | Viking 48 in range from the manufacturer's OBJ, in place | 48 × 27 × 36.5 in (1.22 × 0.68 × 0.925 m) in a 49.5 in opening | 1 | Under the stainless hood; the most-seen appliance. |
+| `fridge_kitchen` (done) | Kitchen | Sub-Zero PRO 36 in glass-door refrigerator from the manufacturer's OBJ, in place | 36 × 29 × 83 in (0.91 × 0.74 × 2.10 m) in a 36.5 in wide, 83.5 in high bay | 1 | Cabinet above runs to the ceiling. A panel-ready unit is an option; I would build the panels. |
+| `hood_insert` | Kitchen | None: the stainless hood is an empty shell | Liner for a 49.5 in wide hood, underside 68.5 in above the floor | 1 | Optional. Only seen from below. |
 | `washer`, `dryer` | Utility | Front-load pair, white, side by side | Each 27 × 28.5 × 38.5 in (0.69 × 0.72 × 0.98 m) | 1 each | Under an oak shelf at 59 in. |
 | `dishwasher` | Kitchen | Not modeled | 24 in, panel-ready or stainless | 1 | Missing today. Natural home is the island beside the sink. |
 | `microwave` or `wall_oven` | Kitchen or pantry | Not modeled | Your choice | 0–1 | Missing today; say where you want it. |
@@ -68,4 +68,4 @@ These are also script-built and would benefit from real models, though you did n
 
 ## Staying as they are
 
-Everything already from Poly Haven: armchairs, lounge chairs, dining chairs, coffee and side tables, shelving, media cabinet, plants, vases, books, framed prints, brass cookware, pendants and ceiling fans. Cabinetry, counters, the oak hood, fireplaces and built-in shelving are architecture and stay modeled in the scene.
+Everything already from Poly Haven: armchairs, lounge chairs, dining chairs, coffee and side tables, shelving, media cabinet, plants, vases, books, framed prints, brass cookware, pendants and ceiling fans. Cabinetry, counters, the stainless hood, fireplaces and built-in shelving are architecture and stay modeled in the scene.

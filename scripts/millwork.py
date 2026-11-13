@@ -73,15 +73,20 @@ B.finish()
 
 # ------------------------------------------------------------------ kitchen
 B = Builder("kitchen", col)
+# slots filled by manufacturer models: listed in scripts/asset_overrides.json and present in assets_incoming/_converted/
+_ov = os.path.join(ROOT, "scripts/asset_overrides.json")
+REPLACED = {k for k in (json.load(open(_ov)) if os.path.exists(_ov) else {})
+            if os.path.exists(os.path.join(ROOT, "assets_incoming/_converted", k + ".blend"))}
 A = PX(1207, 1260)
 KF = Frame(A, (1, 1))                 # s: SW -> NE along the range wall, d: toward the kitchen
 D0 = 0.062                            # wall face
 LEN = 5.36
-# fridge bay
-B.box("steel", KF, 0.08, 0.99, D0 + 0.02, D0 + 0.76, 0.02, 2.12)
-B.box("hw", KF, 0.525, 0.535, D0 + 0.76, D0 + 0.765, 0.05, 2.1)
-for sx in (0.49, 0.57):
-    B.box("steel", KF, sx - 0.01, sx + 0.01, D0 + 0.765, D0 + 0.81, 0.9, 1.7)
+# fridge bay (the modeled refrigerator is skipped when a manufacturer model replaces it: see scripts/place_assets.py)
+if "fridge_kitchen" not in REPLACED:
+    B.box("steel", KF, 0.08, 0.99, D0 + 0.02, D0 + 0.76, 0.02, 2.12)
+    B.box("hw", KF, 0.525, 0.535, D0 + 0.76, D0 + 0.765, 0.05, 2.1)
+    for sx in (0.49, 0.57):
+        B.box("steel", KF, sx - 0.01, sx + 0.01, D0 + 0.765, D0 + 0.81, 0.9, 1.7)
 B.box("trim", KF, 0.03, 0.07, D0, D0 + 0.72, 0.0, 2.95)
 B.box("trim", KF, 1.0, 1.04, D0, D0 + 0.72, 0.0, 2.95)
 B.box("trim", KF, 0.07, 1.0, D0, D0 + 0.70, 2.14, 2.95)
@@ -97,31 +102,32 @@ for s0, s1 in ((1.04, 2.05), (3.31, LEN - 0.04)):
     cab_doors(B, "trim", KF, s0, s1, D0 + 0.34, 1.45, 2.38, n)
     cab_doors(B, "trim", KF, s0, s1, D0 + 0.34, 2.38, 2.95, n, pulls=None)
     B.box("trim", KF, s0, s1, D0, D0 + 0.40, 2.95, CEIL)
-# range
-B.box("steel", KF, 2.07, 3.29, D0 + 0.02, D0 + 0.70, 0.10, 0.90)
-B.box("hw", KF, 2.07, 3.29, D0 + 0.02, D0 + 0.71, 0.0, 0.10)
-B.box("hw", KF, 2.09, 3.27, D0 + 0.04, D0 + 0.68, 0.90, 0.925)
-B.box("glassdark", KF, 2.14, 2.88, D0 + 0.70, D0 + 0.712, 0.22, 0.74)
-B.box("glassdark", KF, 2.92, 3.24, D0 + 0.70, D0 + 0.712, 0.22, 0.74)
-B.box("steel", KF, 2.14, 3.24, D0 + 0.712, D0 + 0.75, 0.76, 0.78)
-for k in range(8):
-    sc = 2.17 + k * 0.148
-    xy = KF.xy(sc, D0 + 0.72)
-    B.rod("hw", (xy[0], xy[1], 0.84), (KF.xy(sc, D0 + 0.75)[0], KF.xy(sc, D0 + 0.75)[1], 0.84), 0.02)
-for (sc, dc) in ((2.3, 0.2), (2.68, 0.2), (3.06, 0.2), (2.3, 0.5), (2.68, 0.5), (3.06, 0.5)):
-    B.cyl("hw", KF.xy(sc, D0 + dc), 0.085, 0.925, 0.945, seg=12)
+# range (skipped when a manufacturer model replaces it)
+if "range_kitchen" not in REPLACED:
+    B.box("steel", KF, 2.07, 3.29, D0 + 0.02, D0 + 0.70, 0.10, 0.90)
+    B.box("hw", KF, 2.07, 3.29, D0 + 0.02, D0 + 0.71, 0.0, 0.10)
+    B.box("hw", KF, 2.09, 3.27, D0 + 0.04, D0 + 0.68, 0.90, 0.925)
+    B.box("glassdark", KF, 2.14, 2.88, D0 + 0.70, D0 + 0.712, 0.22, 0.74)
+    B.box("glassdark", KF, 2.92, 3.24, D0 + 0.70, D0 + 0.712, 0.22, 0.74)
+    B.box("steel", KF, 2.14, 3.24, D0 + 0.712, D0 + 0.75, 0.76, 0.78)
+    for k in range(8):
+        sc = 2.17 + k * 0.148
+        xy = KF.xy(sc, D0 + 0.72)
+        B.rod("hw", (xy[0], xy[1], 0.84), (KF.xy(sc, D0 + 0.75)[0], KF.xy(sc, D0 + 0.75)[1], 0.84), 0.02)
+    for (sc, dc) in ((2.3, 0.2), (2.68, 0.2), (3.06, 0.2), (2.3, 0.5), (2.68, 0.5), (3.06, 0.5)):
+        B.cyl("hw", KF.xy(sc, D0 + dc), 0.085, 0.925, 0.945, seg=12)
 B.box("quartz", KF, 2.05, 3.31, D0, D0 + 0.015, 0.915, 1.80)
-# oak hood
-B.box("oak", KF, 2.05, 3.31, D0, D0 + 0.60, 1.74, 1.92)
+# stainless hood, matching the range
+B.box("hood", KF, 2.05, 3.31, D0, D0 + 0.60, 1.74, 1.92)
 
 
 def hood_pt(s, d, z):
     return KF.p(s, d, z)
 
 
-B.hexa("oak", [hood_pt(2.07, D0, 1.92), hood_pt(3.29, D0, 1.92), hood_pt(3.29, D0 + 0.58, 1.92), hood_pt(2.07, D0 + 0.58, 1.92),
+B.hexa("hood", [hood_pt(2.07, D0, 1.92), hood_pt(3.29, D0, 1.92), hood_pt(3.29, D0 + 0.58, 1.92), hood_pt(2.07, D0 + 0.58, 1.92),
                hood_pt(2.22, D0, 2.72), hood_pt(3.14, D0, 2.72), hood_pt(3.14, D0 + 0.42, 2.72), hood_pt(2.22, D0 + 0.42, 2.72)])
-B.box("oak", KF, 2.20, 3.16, D0, D0 + 0.44, 2.72, CEIL)
+B.box("hood", KF, 2.20, 3.16, D0, D0 + 0.44, 2.72, CEIL)
 # pot filler
 pf = KF.xy(2.68, D0 + 0.02)
 B.rod("brass", (pf[0], pf[1], 1.38), (KF.xy(2.68, D0 + 0.3)[0], KF.xy(2.68, D0 + 0.3)[1], 1.38), 0.012)

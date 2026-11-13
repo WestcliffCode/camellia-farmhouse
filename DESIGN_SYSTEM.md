@@ -32,6 +32,8 @@ Modern farmhouse: buff brick and near-black board-and-batten outside, calm white
 | MAT-trim_white | `beige_wall_001` (whitened) | 3.0 m | painted millwork and cabinetry: base, crown, casings, cabinet boxes and doors |
 | MAT-quartz | `marble_01` (one tile cropped from inside its grout lines, mirrored into a seam-free slab, lightened) | 1.15 x 0.64 m repeat | counters and splashes. Poly Haven's stone sets are all tiled floors, so a slab is made from a single tile |
 | MAT-mat_rubber | `rubber_tiles` | 2.0 m | garage and gym floor mats |
+| MAT-app_* | — (plain values, defined in `scripts/asset_convert.py`) | — | manufacturer appliance models: stainless, cast iron, clear and tinted glass, black, liner, clear bins |
+| MAT-hood_stainless | — (same values as MAT-app_stainless) | — | kitchen range hood, matching the range |
 | Value-only Principled | — | — | wall and ceiling paints, metals, glass, porcelain (with a shared tileable noise normal map where texture is needed) |
 | Generated textures | `TEX-lawn`, `TEX-art_*`, `TEX-noise_normal` (written by the scripts) | 9 m / 1.3-1.8 m / per material | lawn, artwork, surface grain |
 

@@ -19,12 +19,19 @@ STATUS: COMPLETE — house built, furnished, lit from a captured golden-hour sky
 1. Trace (only if the plan image changes): `scripts/trace/wallmask.py` → `scripts/trace/vectorize.py` → copy `trace_raw.json` into `scripts/trace/`.
 2. `uv run --with shapely python scripts/plan_data.py` → `scripts/structure.json`.
 3. In Blender, `exec(open("<repo>/scripts/<name>.py").read())` in this order:
-   `build_structure` → `build_openings` → `build_shell` → `build_exterior` → `materials` → `millwork` → `furnish_rooms` → `lighting` → `cameras` → `landscape`.
+   `build_structure` → `build_openings` → `build_shell` → `build_exterior` → `materials` → `millwork` → `furnish_rooms` → `lighting` → `cameras` → `landscape` → `place_assets`.
    - `materials.py` needs the Poly Haven texture sets already imported (ids in DESIGN_SYSTEM.md, including `marble_01`, `beige_wall_001` and `rubber_tiles`); `lighting.py` needs the HDRI `magalies_field_sunset` imported (it falls back to a procedural sky if missing); `furnish_rooms.py` and `landscape.py` need the Poly Haven models imported (ids in `furnish_lib.PH_ASSETS`, plus `tree_small_02`). Import with `mcp__blender__import_asset`, then run `externalize_images()` from `bl_common.py`.
    - `furnish_rooms.py` defines a function named `R`; don't keep a path in a variable called `R` when exec-ing scripts in a loop.
 4. Walkthrough preview: `Blender -b project-files/camellia-farmhouse.blend -P scripts/render_walkthrough.py -- 640 48 2 output/renders/walkthrough/frames`, then `ffmpeg -framerate 12 -pattern_type glob -i 'output/renders/walkthrough/frames/walk_*.jpg' -vf fps=24 -c:v libx264 -pix_fmt yuv420p output/renders/walkthrough/camellia_walkthrough_preview.mp4`.
 4b. Background renders: `Blender -b project-files/camellia-farmhouse.blend -P scripts/render_stills.py -- --cams all --pct 100 --samples 256 --out output/renders/final`. Review with `scripts/contact_sheet.py`. Walkthrough samples: `scripts/render_walk_samples.py`.
 5. Export: `Blender -b project-files/camellia-farmhouse.blend -P scripts/export_glb.py`.
+
+## Manufacturer and purchased models
+- Hand-off folder: `assets_incoming/` (git-ignored; the repository is public and these models must not be published). Slot ids and fit sizes are in `SHOPPING_LIST.md`.
+- Per model: `Blender -b --factory-startup -P scripts/asset_import_raw.py -- <slot> <obj> <scale to metres> <up axis> <forward axis>` (raw library and a parts list), then add the slot's material rules to `scripts/asset_convert.py` and run `Blender -b assets_incoming/_converted/<slot>_raw.blend -P scripts/asset_convert.py -- <slot>`. `scripts/asset_preview.py` renders check views of either file.
+- Placement: add the slot to `scripts/asset_overrides.json`, then in Blender run `millwork.py` (it leaves the modeled version out for listed slots whose library exists) and `place_assets.py`. `place_assets.py` runs last in the rebuild order, after `lighting.py`, because it adds the refrigerator's interior light to `COL-lights`.
+- The models are linked, not appended: the scene file refers to `assets_incoming/_converted/<slot>.blend`. A clone without that folder opens with those two appliances missing; rebuilding with `millwork.py` brings the modeled versions back.
+- In place now: `range_kitchen` (Viking 48 in range, reduced from 1.13 million faces to 220,000 by `asset_convert.py`: parts that cannot be seen once installed are dropped, the rest welded and thinned) and `fridge_kitchen` (Sub-Zero PRO 36 in glass-door refrigerator, right hinge).
 
 ## Timeline
 - Frames 1–1080 (24 fps): `CAM-walkthrough` follows `CRV-walkthrough` from the foyer through family room, kitchen, dining, mudroom arch and primary hall into the primary suite.
@@ -56,6 +63,8 @@ STATUS: COMPLETE — house built, furnished, lit from a captured golden-hour sky
 Nothing is owed. Optional polish: richer bath fixtures, window casings, more decor, a full-resolution walkthrough render.
 
 ## Log
+- 2026-11-13 (range reduction): range cut from 1.13 million faces to 220,000; grates set to matte black; range hood changed from oak to stainless matching the range (`MAT-hood_stainless`).
+- 2026-11-13 (manufacturer models): Viking range and Sub-Zero refrigerator brought in from manufacturer OBJ files, materials assigned by rule (stainless, cast iron, glass), linked into the kitchen in place of the modeled ones; conversion and placement scripts added; kitchen views and walkthrough re-rendered.
 - 2026-11-13 (eleventh pass): Poly Haven tufted leather sofa (`sofa_02`) replaces the modeled sofa in the game room and the second sofa in the bonus room (98 placements of 28 assets); sun coverage recounted at full room height (24 of 34 rooms get direct sun in one preset or the other; the other 10 have no windows on the plan).
 - 2026-11-13 (tenth pass): second lighting preset added (sunrise: sun in front of the house) so every glazed room gets direct golden-hour sun in one preset or the other, with 12 views rendered under it; same-material sun-against-shade measurement added to the lighting reference; camera rig check script added (it found the four elevation cameras without markers; fixed).
 - 2026-11-13 (ninth pass): sun turned to 28 degrees west of the back axis so it reaches the office and bedroom 4 (12 rooms with direct sun); 14 more Poly Haven pieces placed (framed prints, standing frames, vases, brass cookware on the range, an ottoman): 96 placements of 27 assets; grey-card and lamps-off lighting measurements added to the reference board; bonus-room cans raised after the view fell under the brightness bar; everything re-rendered, re-exported and re-validated.

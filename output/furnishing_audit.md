@@ -1,6 +1,6 @@
 # Furnishing audit
 
-- Poly Haven instances: 98 placements of 28 assets. Modeled furniture meshes: 159.
+- Poly Haven instances: 98 placements of 28 assets. Manufacturer models (linked from assets_incoming): fridge_kitchen, range_kitchen. Modeled furniture meshes: 159.
 - Instances with a footprint corner inside a wall: 0 
 - Modeled meshes with more than 1% of sampled vertices more than 4 cm inside a wall: 0 
 - Materials on modeled furniture (32), all from the design-system palette: art_a, art_b, art_c, brass, bulb, ceramic_matte, curtain, fab_char, fab_grey, fab_navy, fab_oat, fab_rust, fab_sage, fab_white, glass, glass_dark, hardware_black, lamp_shade, leather_tan, mat_rubber, mirror, oak, porcelain, quartz, rug_blue, rug_cream, rug_warm, siding_dark, stainless, tile_marble, towel, trim_white

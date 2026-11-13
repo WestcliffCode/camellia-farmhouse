@@ -285,6 +285,7 @@ MATN = {
     "white": "MAT-paint_white", "charcoal": "MAT-paint_charcoal", "ceiling": "MAT-paint_ceiling",
     "trim": "MAT-trim_white", "siding": "MAT-siding_dark", "black": "MAT-metal_black",
     "hw": "MAT-hardware_black", "quartz": "MAT-quartz", "steel": "MAT-stainless", "brass": "MAT-brass",
+    "hood": "MAT-hood_stainless",
     "porcelain": "MAT-porcelain", "mirror": "MAT-mirror", "glassdark": "MAT-glass_dark", "glass": "MAT-glass",
     "oak": "MAT-oak", "timber": "MAT-timber", "limestone": "MAT-limestone", "brick": "MAT-brick",
     "tile": "MAT-tile_marble", "floor_oak": "MAT-floor_oak", "concrete": "MAT-concrete",

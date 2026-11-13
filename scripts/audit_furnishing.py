@@ -17,6 +17,7 @@ def deep_in_wall(x, y, tol=0.04):
 
 
 inst_bad, mesh_bad, n_inst, n_mesh, assets = [], [], 0, 0, {}
+MFR = {"ASSET-" + k for k in json.load(open(os.path.join(ROOT, "scripts/asset_overrides.json")))}      # slots filled by manufacturer models
 for c in furn.children:
     for e in c.objects:
         if e.instance_type == "COLLECTION":
@@ -49,7 +50,8 @@ KINDS = ["sofa", "bed", "bench", "stool", "table", "round_table", "dresser", "co
          "ring_chandelier", "art", "round_mirror", "curtains", "toilet", "vanity", "tub", "shower", "appliance",
          "shelf_wall", "stock", "base_cabinet"]
 lines = ["# Furnishing audit", "",
-         f"- Poly Haven instances: {n_inst} placements of {len(assets)} assets. Modeled furniture meshes: {n_mesh}.",
+         f"- Poly Haven instances: {n_inst - sum(v for k, v in assets.items() if k in MFR)} placements of {len([k for k in assets if k not in MFR])} assets. "
+         f"Manufacturer models (linked from assets_incoming): {', '.join(sorted(k[6:] for k in assets if k in MFR)) or 'none'}. Modeled furniture meshes: {n_mesh}.",
          f"- Instances with a footprint corner inside a wall: {len(inst_bad)} {inst_bad if inst_bad else ''}",
          f"- Modeled meshes with more than 1% of sampled vertices more than 4 cm inside a wall: {len(mesh_bad)} {mesh_bad if mesh_bad else ''}",
          f"- Materials on modeled furniture ({len(mats)}), all from the design-system palette: " + ", ".join(m[4:] for m in mats),
