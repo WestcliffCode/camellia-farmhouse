@@ -1,4 +1,4 @@
-STATUS: COMPLETE — house built, furnished, lit, rendered and exported; 33 stills and the walkthrough reviewed; 23 GLBs validated (2026-11-13).
+STATUS: COMPLETE — house built, furnished, lit from a captured golden-hour sky, rendered and exported; 33 stills and the walkthrough reviewed; 23 GLBs validated (2026-11-13).
 
 # Handoff
 
@@ -20,7 +20,7 @@ STATUS: COMPLETE — house built, furnished, lit, rendered and exported; 33 stil
 2. `uv run --with shapely python scripts/plan_data.py` → `scripts/structure.json`.
 3. In Blender, `exec(open("<repo>/scripts/<name>.py").read())` in this order:
    `build_structure` → `build_openings` → `build_shell` → `build_exterior` → `materials` → `millwork` → `furnish_rooms` → `lighting` → `cameras` → `landscape`.
-   - `materials.py` needs the Poly Haven texture sets already imported (ids in DESIGN_SYSTEM.md); `furnish_rooms.py` and `landscape.py` need the Poly Haven models imported (ids in `furnish_lib.PH_ASSETS`, plus `tree_small_02`). Import with `mcp__blender__import_asset`, then run `externalize_images()` from `bl_common.py`.
+   - `materials.py` needs the Poly Haven texture sets already imported (ids in DESIGN_SYSTEM.md); `lighting.py` needs the HDRI `magalies_field_sunset` imported (it falls back to a procedural sky if missing); `furnish_rooms.py` and `landscape.py` need the Poly Haven models imported (ids in `furnish_lib.PH_ASSETS`, plus `tree_small_02`). Import with `mcp__blender__import_asset`, then run `externalize_images()` from `bl_common.py`.
    - `furnish_rooms.py` defines a function named `R`; don't keep a path in a variable called `R` when exec-ing scripts in a loop.
 4. Walkthrough preview: `Blender -b project-files/camellia-farmhouse.blend -P scripts/render_walkthrough.py -- 640 48 2 output/renders/walkthrough/frames`, then `ffmpeg -framerate 12 -pattern_type glob -i 'output/renders/walkthrough/frames/walk_*.jpg' -vf fps=24 -c:v libx264 -pix_fmt yuv420p output/renders/walkthrough/camellia_walkthrough_preview.mp4`.
 4b. Background renders: `Blender -b project-files/camellia-farmhouse.blend -P scripts/render_stills.py -- --cams all --pct 100 --samples 256 --out output/renders/final`. Review with `scripts/contact_sheet.py`. Walkthrough samples: `scripts/render_walk_samples.py`.
@@ -38,13 +38,13 @@ STATUS: COMPLETE — house built, furnished, lit, rendered and exported; 33 stil
 - Walkthrough: camera stays inside the footprint for all 1080 frames with at least 0.30 m to the nearest surface; rendered end to end as an MP4.
 - Export: all 23 GLBs (trees included) re-imported in an empty scene; meshes, UVs, textures, transmissive glass, 34 cameras, 180 lights and the baked walkthrough animation survive (`output/glb_validation.txt`).
 - Roof against drawings: orthographic front, back, left and right renders compared side by side with the elevation sheets; ridge heights 9.2 / 8.5 / 8.6 m against 9.35 / 8.5 / 8.4 m scaled from the drawings.
-- Lighting measured in the scene (`output/lighting_verification.txt`): sun 6.0 degrees above the horizon behind the house; a ray test toward the sun shows direct light entering 11 rooms through the glazing.
+- Lighting reference and measurement (`output/lighting_verification.txt`): the sky is the captured Poly Haven sunset HDRI `magalies_field_sunset`; its sun (4.1 degrees above the horizon) was located in the image, the map rotated to put it behind the house, and the sun lamp aligned with it. A ray test toward the sun shows direct light entering 10 rooms through the glazing.
 - Ray test from 5,045 points across every room: nothing but ceilings and fittings overhead; 1,800 points in the bonus room: roof never below the interior ceiling.
 - All 33 still cameras rendered at 1080p and reviewed (`output/renders/contact_*.png`). Defects found and fixed along the way: roof slabs inside the foyer vault, primary bath, closet and kitchen tray; batten strips showing inside vaulted rooms and the bonus dormer; cameras blocked by furniture; dark bonus and storage rooms; rolled cameras; material slots lost on rebuild; daylight-looking sky retuned to a 6 degree golden-hour sun with dusk sky.
 
 ## Design decisions on record
 - Roof: built from the four elevation sheets and checked against them with orthographic renders (`output/renders/contact_elevations.png`, `output/renders/elevation_check/`). Side-gabled main block on a 14 ft plate (ridge 9.2 m); north-south wing roofs with trussed gables; east-west upper wing roofs behind them (ridge 8.5 m, gable ends facing sideways); brick front gables; portico cross gable over the foyer vault; two front dormers; the tall rear north-south roof over the dining and service wing (ridge 8.6 m) with its back gable behind the outdoor chimney; bonus-room shed dormer; lean-to porch roofs; two chimneys.
-- Primary suite back wall follows the floorplan (two end windows), because the plan is the source of truth; the back elevation sheet draws a triple window there.
+- Back gables: plan and back elevation agree and the model matches both. Seen from behind, the left gable is the primary suite with two flanking windows and the right gable is the game room with a triple window. (An earlier note here claimed a mismatch; that was a mirror-reading error.)
 - Furniture sources: Poly Haven models wherever a clean one exists (armchairs, lounge chairs, dining chairs, coffee, side and round tables, shelving, media cabinet, plants, vases, books, bowls, pendants, ceiling fans, trees). Poly Haven has only five sofas (all vintage) and no beds, cabinetry, appliances or plumbing fixtures in this style, so those are modeled here: cushioned sofas and channel-headboard beds upholstered in Poly Haven linen and herringbone wool, lathed hollow tubs, vessel basins and toilets, framed cabinetry, range, hood and refrigerator.
 - Closet doors are closed except the linen and bedroom-4 storage doors, which are shown open.
 - The plan set has a main floor and a bonus room; both are modeled in full. The plans draw no basement level (only a door labelled for it), so there is no basement.
@@ -53,6 +53,7 @@ STATUS: COMPLETE — house built, furnished, lit, rendered and exported; 33 stil
 Nothing is owed. Optional polish: richer bath fixtures, window casings, more decor, an HDRI backdrop, a rendered walkthrough animation.
 
 ## Log
+- 2026-11-13 (fifth pass): sky switched to the captured golden-hour HDRI with the sun lamp aligned to its measured sun; back-gable window note corrected; everything re-rendered.
 - 2026-11-13 (fourth pass): added the east-west upper wing roofs from the front and side elevations (clipped to the valleys of the lower wing roofs); measured the lighting; exteriors and elevations re-rendered; GLBs re-exported.
 - 2026-11-13 (third pass): added the tall rear north-south roof shown on three elevation sheets; rebuilt sofas, beds, tubs, basins and toilets with cushion and lathe geometry and Poly Haven textiles; ceiling fans; trees added to the export set.
 - 2026-11-13 (second pass): garage, storage rooms, linen closet, pantry goods and hall runners added; all materials rebuilt as image-based Principled (tints baked); cans converted to spot lights so the rig exports; sun lowered to 6 degrees with a dusk sky; walkthrough path checked and rendered.

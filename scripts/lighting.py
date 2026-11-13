@@ -50,7 +50,12 @@ scene.render.resolution_x, scene.render.resolution_y = 1920, 1080
 scene.render.resolution_percentage = 100
 scene.render.image_settings.file_format = "PNG"
 
-# ------------------------------------------------------------------ world: physical sky for ambient + a sun lamp for the key
+# ------------------------------------------------------------------ world: captured golden-hour sky + a sun lamp for the key
+# The sky is the Poly Haven HDRI `magalies_field_sunset` (a real clear-sky sunset over a field). Its sun position is
+# measured from the image, the map is rotated so that sun sits behind the house, and the sun lamp is aligned with it.
+import shutil
+HDRI_ID = "magalies_field_sunset"
+hdr = next((i for i in bpy.data.images if HDRI_ID in i.name or HDRI_ID in i.filepath), None)
 world = bpy.data.worlds.get("WORLD-camellia") or bpy.data.worlds.new("WORLD-camellia")
 scene.world = world
 world.use_nodes = True
@@ -59,34 +64,61 @@ for n in list(nt.nodes):
     nt.nodes.remove(n)
 out = nt.nodes.new("ShaderNodeOutputWorld")
 bg = nt.nodes.new("ShaderNodeBackground")
-sky = nt.nodes.new("ShaderNodeTexSky")
-types = enum_ids(bpy.types.ShaderNodeTexSky, "sky_type")
-pick = next((t for t in types if "MULTI" in t), None) or next((t for t in types if "NISHITA" in t), None) or types[-1]
-sky.sky_type = pick
-for attr, val in (("sun_elevation", SUN_ELEV), ("sun_disc", False), ("sun_intensity", 1.0),
-                  ("air_density", 1.0), ("ozone_density", 1.0)):
-    if hasattr(sky, attr):
-        try:
-            setattr(sky, attr, val)
-        except Exception:
-            pass
-for attr in ("dust_density", "aerosol_density"):
-    if hasattr(sky, attr):
-        try:
-            setattr(sky, attr, 2.0)
-        except Exception:
-            pass
-# rotate the sky so its glow sits behind the sun lamp (sky's sun is at +Y when rotation is 0)
-if hasattr(sky, "sun_rotation"):
-    sky.sun_rotation = math.atan2(SUN_DIR_XY.x, SUN_DIR_XY.y)
-bg.inputs["Strength"].default_value = 0.13
-nt.links.new(sky.outputs[0], bg.inputs["Color"])
 nt.links.new(bg.outputs[0], out.inputs["Surface"])
-print("sky type", pick, "of", types)
+HDRI_SUN = None
+if hdr is not None:
+    src = bpy.path.abspath(hdr.filepath)
+    dst = os.path.join(TEX_DIR, os.path.basename(src) or HDRI_ID + "_2k.hdr")
+    if hdr.packed_file is not None:
+        with open(dst, "wb") as fh:
+            fh.write(hdr.packed_file.data)
+        hdr.unpack(method="REMOVE")
+    elif os.path.abspath(src) != os.path.abspath(dst) and os.path.exists(src):
+        shutil.copy(src, dst)
+    hdr.filepath = "//textures/" + os.path.basename(dst)
+    hdr.reload()
+    hdr.use_fake_user = True
+    w_, h_ = hdr.size
+    px = np.empty(w_ * h_ * 4, np.float32)
+    hdr.pixels.foreach_get(px)
+    lum = px.reshape(h_, w_, 4)[..., :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    thr = np.partition(lum.ravel(), -200)[-200]
+    ys_, xs_ = np.nonzero(lum >= thr)
+    wts = lum[ys_, xs_]
+    u = float(np.average((xs_ + 0.5) / w_, weights=wts))
+    v = float(np.average((ys_ + 0.5) / h_, weights=wts))
+    phi, theta = (u - 0.5) * 2 * math.pi, (v - 0.5) * math.pi
+    s_dir = Vector((-math.cos(phi) * math.cos(theta), math.sin(phi) * math.cos(theta), math.sin(theta)))
+    HDRI_SUN = (math.degrees(theta), math.degrees(math.atan2(s_dir.y, s_dir.x)), float(lum.max()))
+    SUN_ELEV = max(math.radians(4.0), theta)          # lamp follows the captured sun (kept clear of the horizon line)
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    mp = nt.nodes.new("ShaderNodeMapping")
+    env = nt.nodes.new("ShaderNodeTexEnvironment")
+    env.image = hdr
+    want = math.atan2(SUN_DIR_XY.y, SUN_DIR_XY.x)
+    mp.inputs["Rotation"].default_value = (0.0, 0.0, math.atan2(s_dir.y, s_dir.x) - want)
+    nt.links.new(tc.outputs["Generated"], mp.inputs["Vector"])
+    nt.links.new(mp.outputs["Vector"], env.inputs["Vector"])
+    nt.links.new(env.outputs["Color"], bg.inputs["Color"])
+    bg.inputs["Strength"].default_value = 0.30        # dusk: the captured sky is dimmed so sun and practicals carry the scene
+    print("HDRI sun: elevation %.1f deg, image azimuth %.1f deg, peak luminance %.0f; lamp elevation %.1f deg"
+          % (HDRI_SUN[0], HDRI_SUN[1], HDRI_SUN[2], math.degrees(SUN_ELEV)))
+else:
+    sky = nt.nodes.new("ShaderNodeTexSky")
+    types = enum_ids(bpy.types.ShaderNodeTexSky, "sky_type")
+    sky.sky_type = next((t for t in types if "MULTI" in t), types[-1])
+    sky.sun_elevation = SUN_ELEV
+    for attr, val in (("sun_disc", False), ("sun_rotation", math.atan2(SUN_DIR_XY.x, SUN_DIR_XY.y))):
+        if hasattr(sky, attr):
+            setattr(sky, attr, val)
+    bg.inputs["Strength"].default_value = 0.13
+    nt.links.new(sky.outputs[0], bg.inputs["Color"])
+    print("HDRI not found; using the procedural sky")
+scene["camellia_hdri_sun"] = json.dumps(HDRI_SUN)
 
 sd = bpy.data.lights.new("LGT-sun", "SUN")
-sd.energy = 3.4
-sd.color = (1.0, 0.50, 0.22)
+sd.energy = 4.2
+sd.color = (1.0, 0.48, 0.20)
 sd.angle = math.radians(1.6)
 sun = bpy.data.objects.new("LGT-sun", sd)
 col.objects.link(sun)

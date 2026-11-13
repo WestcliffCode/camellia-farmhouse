@@ -1,7 +1,17 @@
 Lighting verification (measured in the saved scene, 2026-11-13)
-Sun lamp: elevation 6.0 deg, azimuth 18.8 deg west of the house's back axis, colour (1.0, 0.50, 0.22), strength 3.4
-Sky: multiple-scattering sky, sun elevation 6.0 deg, strength 0.13; view transform AgX, exposure +0.6
-Practicals: 145 spot lights (recessed cans, under-cabinet, porch), 34 point lights (lamps, pendants, chandeliers, sconces, lanterns, fire glow)
+Sky reference: Poly Haven HDRI magalies_field_sunset (captured clear-sky sunset over a field, CC0), 2k, strength 0.30
+Sun position measured in the HDRI: elevation 4.1 deg; map rotated so that sun sits behind the house
+Sun lamp aligned with it: elevation 4.1 deg, azimuth -18.8 deg from the house's back axis, colour (1.00, 0.48, 0.20), strength 4.2
+View transform AgX, exposure +0.6
+Practicals: 145 spot lights (recessed cans, under-cabinet, porch) and 34 point lights (lamps, pendants, chandeliers, sconces, lanterns, fire glow), all 2700-3000 K
 Direct sun reaching interior sample points through glazing (lit / tested; ray test toward the sun, glass treated as clear):
-  back_vestibule 229/675, game_room 200/675, foyer 173/675, great_room 112/357, primary_suite 84/675, jj_bath_a 53/675,
-  mud_vestibule 18/372, bedroom_4 12/675, hutch_niche 12/675, office 2/675, family_foyer 1/639
+  back_vestibule    230 /  675
+  game_room         204 /  675
+  foyer             191 /  675
+  great_room        117 /  357
+  mud_vestibule     111 /  372
+  primary_suite      84 /  675
+  jj_bath_a          53 /  675
+  bedroom_4          12 /  675
+  hutch_niche         2 /  675
+  office              1 /  675

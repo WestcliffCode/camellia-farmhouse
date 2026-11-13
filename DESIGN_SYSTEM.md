@@ -41,8 +41,8 @@ All meshes built by the scripts carry world-scale box UVs in metres (`UVMap`), s
 - Walk paths stay at least 0.9 m clear. Rugs sit 0.3–0.45 m off walls; front sofa legs on the rug.
 
 ## Lighting philosophy
-- Golden hour sliding into dusk: sun 6 degrees above the horizon, behind the house and slightly left as seen from the street, deep orange (1.0, 0.50, 0.22), strength 3.4. It rakes through the family room, kitchen, dining and primary suite glazing and backlights the front elevation.
-- Sky: Blender multiple-scattering sky at strength 0.13, rotated so its glow sits behind the sun; the street side reads as twilight with the windows glowing.
+- Golden hour sliding into dusk, taken from a real capture: the sky is the Poly Haven HDRI `magalies_field_sunset` (clear-sky sunset over a dry field with bare trees), dimmed to strength 0.30 so it reads as dusk and supplies the horizon and treeline.
+- The HDRI's sun was located in the image (4.1 degrees above the horizon) and the map rotated so it sits behind the house, slightly left as seen from the street. A sun lamp is aligned with it (deep orange 1.0, 0.48, 0.20, strength 4.2) to give crisp beams through the family room, kitchen, dining, game room and primary suite glazing.
 - Practicals at 2700-3000 K carry the interiors: recessed cans (spot lights, 125 degree cone) on a grid, pendants over the island, ring chandeliers in foyer and dining, table and floor lamps in every sitting and sleeping room, under-cabinet spots in the kitchen, lanterns at the exterior doors.
 - AgX view transform, exposure +0.6. Glass and lamp-shade objects are excluded from shadow rays so sun and bulbs light the rooms.
 
